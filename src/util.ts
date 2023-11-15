@@ -6,3 +6,7 @@ export function getDirAndFileName(importMeta: ImportMeta) {
     const __dirname = path.dirname(__filename);
     return { __filename, __dirname }
 }
+
+export function getBasePath() {
+    return window.basePath;
+}

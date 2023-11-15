@@ -1,11 +1,22 @@
 import HasagiClient, { Hasagi, ChampSelectSession } from "@hasagi/extended";
 import { PropsWithChildren, createContext, useEffect, useState } from "react";
 import { Client } from "./hasagi-client";
+import { type Page } from "./pages/index";
+import Configuration, { loadConfig } from "./configuration";
+import MainProcessIpc from "./main-process";
+
+// App context
+export const DefaultAppContext = {
+    config: Configuration.getFullConfig(),
+    baseAppDirectoryPath: null! as string
+}
+
+export const AppContext = createContext(DefaultAppContext);
 
 // Navigation context
 export const DefaultNavigationContext = {
-    page: "",
-    setPage: null! as (page: string) => void
+    page: "settings" as Page,
+    setPage: null! as (page: Page) => void
 }
 
 export const NavigationContext = createContext(DefaultNavigationContext);
@@ -16,23 +27,30 @@ export const DefaultLoLContext = {
     gameflowPhase: "None",
     isConnected: false,
     runePages: []
-} as { 
-    isConnected: boolean, runePages: ReadonlyArray<Hasagi.RunePage>, 
+} as {
+    isConnected: boolean, runePages: ReadonlyArray<Hasagi.RunePage>,
     gameflowPhase: Hasagi.GameflowPhase, liveClientData?: Awaited<ReturnType<HasagiClient["LiveClient"]["getLiveClientData"]>>,
-    lobby?: Hasagi.Lobby, queueState?: Hasagi.QueueState, 
+    lobby?: Hasagi.Lobby, queueState?: Hasagi.QueueState,
     champSelectSession?: ChampSelectSession, endOfGameStats?: Hasagi.EndOfGameData
 } & (
-    { state: "None" } |
-    { state: "Lobby", lobby: Hasagi.Lobby } |
-    { state: "InQueue", lobby: Hasagi.Lobby, queueState: Hasagi.QueueState } |
-    { state: "ChampSelect", lobby: Hasagi.Lobby, champSelectSession: ChampSelectSession } |
-    { state: "InGame", lobby: Hasagi.Lobby, liveClientData: Awaited<ReturnType<HasagiClient["LiveClient"]["getLiveClientData"]>> } |
-    { state: "PostGame", lobby: Hasagi.Lobby, endOfGameStats: Hasagi.EndOfGameData }
-)
+        { state: "None" } |
+        { state: "Lobby", lobby: Hasagi.Lobby } |
+        { state: "InQueue", lobby: Hasagi.Lobby, queueState: Hasagi.QueueState } |
+        { state: "ChampSelect", lobby: Hasagi.Lobby, champSelectSession: ChampSelectSession } |
+        { state: "InGame", lobby: Hasagi.Lobby, liveClientData: Awaited<ReturnType<HasagiClient["LiveClient"]["getLiveClientData"]>> } |
+        { state: "PostGame", lobby: Hasagi.Lobby, endOfGameStats: Hasagi.EndOfGameData }
+    )
 
 export const LoLContext = createContext(DefaultLoLContext);
 
 export function ContextProviders(props: PropsWithChildren) {
+    const [appContext, setAppContext] = useState(DefaultAppContext);
+    useEffect(() => {
+        Configuration.setUpdateCallback(config => setAppContext(ctx => ({ ...ctx, config })));
+        console.log("called")
+        loadConfig();
+    }, []);
+
     const [navigationContext, setNavigationContext] = useState(DefaultNavigationContext);
     useEffect(() => {
         if (navigationContext.setPage === null)
@@ -46,10 +64,10 @@ export function ContextProviders(props: PropsWithChildren) {
         Client.on("rune-pages-update", (runePages) => setLoLContext(ctx => ({ ...ctx, runePages: runePages.filter(r => r.isEditable) })));
 
         Client.on("lobby-update", lobby => {
-            if (lobby) 
+            if (lobby)
                 setLoLContext(ctx => ({ ...ctx, lobby }));
         });
-        
+
         Client.on("queue-state-update", queueState => {
             if (queueState) {
                 setLoLContext(ctx => ({ ...ctx, queueState }));
@@ -57,7 +75,7 @@ export function ContextProviders(props: PropsWithChildren) {
                 setLoLContext(ctx => ({ ...ctx } as any));
             }
         });
-        
+
         Client.on("champ-select-session-update", champSelectSession => {
             if (champSelectSession) {
                 setLoLContext(ctx => ({ ...ctx, champSelectSession }));
@@ -65,11 +83,11 @@ export function ContextProviders(props: PropsWithChildren) {
                 setLoLContext(ctx => ({ ...ctx } as any));
             }
         });
-        
+
         Client.on("gameflow-phase-update", phase => {
             setLoLContext(ctx => ({ ...ctx, gameflowPhase: phase }));
         });
-        
+
         Client.on("end-of-game-data-received", endOfGameStats => {
             setLoLContext(ctx => ({ ...ctx, endOfGameStats }));
         });
@@ -78,7 +96,7 @@ export function ContextProviders(props: PropsWithChildren) {
     }, []);
 
     useEffect(() => {
-        if(lolContext.gameflowPhase === "None" && lolContext.state !== "None") {
+        if (lolContext.gameflowPhase === "None" && lolContext.state !== "None") {
             setLoLContext(ctx => {
                 const context = structuredClone(ctx);
                 context.state = "None";
@@ -90,7 +108,7 @@ export function ContextProviders(props: PropsWithChildren) {
                 return context;
             });
         } else if (lolContext.gameflowPhase === "Lobby" && lolContext.state !== "Lobby") {
-            if(lolContext.lobby !== undefined) 
+            if (lolContext.lobby !== undefined)
                 setLoLContext(ctx => {
                     const context = structuredClone(ctx);
                     context.state = "Lobby";
@@ -102,7 +120,7 @@ export function ContextProviders(props: PropsWithChildren) {
                     return context;
                 });
         } else if (lolContext.gameflowPhase === "Matchmaking" && lolContext.state !== "InQueue") {
-            if(lolContext.lobby !== undefined && lolContext.queueState !== undefined)
+            if (lolContext.lobby !== undefined && lolContext.queueState !== undefined)
                 setLoLContext(ctx => {
                     const context = structuredClone(ctx);
                     context.state = "InQueue";
@@ -114,7 +132,7 @@ export function ContextProviders(props: PropsWithChildren) {
                     return context;
                 });
         } else if (lolContext.gameflowPhase === "ChampSelect" && lolContext.state !== "ChampSelect") {
-            if(lolContext.lobby !== undefined && lolContext.champSelectSession !== undefined)
+            if (lolContext.lobby !== undefined && lolContext.champSelectSession !== undefined)
                 setLoLContext(ctx => {
                     const context = structuredClone(ctx);
                     context.state = "ChampSelect";
@@ -126,7 +144,7 @@ export function ContextProviders(props: PropsWithChildren) {
                     return context;
                 });
         } else if (lolContext.gameflowPhase === "InProgress" && lolContext.state !== "InGame") {
-            if(lolContext.lobby !== undefined && lolContext.liveClientData !== undefined)
+            if (lolContext.lobby !== undefined && lolContext.liveClientData !== undefined)
                 setLoLContext(ctx => {
                     const context = structuredClone(ctx);
                     context.state = "InGame";
@@ -138,7 +156,7 @@ export function ContextProviders(props: PropsWithChildren) {
                     return context;
                 });
         } else if (lolContext.gameflowPhase === "EndOfGame" && lolContext.state !== "PostGame") {
-            if(lolContext.lobby !== undefined && lolContext.endOfGameStats !== undefined)
+            if (lolContext.lobby !== undefined && lolContext.endOfGameStats !== undefined)
                 setLoLContext(ctx => {
                     const context = structuredClone(ctx);
                     context.state = "PostGame";
@@ -153,10 +171,12 @@ export function ContextProviders(props: PropsWithChildren) {
     }, [lolContext.champSelectSession, lolContext.endOfGameStats, lolContext.gameflowPhase, lolContext.liveClientData, lolContext.lobby, lolContext.queueState, lolContext.state])
 
     return (
-        <NavigationContext.Provider value={navigationContext}>
-            <LoLContext.Provider value={lolContext}>
-                {props.children}
-            </LoLContext.Provider>
-        </NavigationContext.Provider>
+        <AppContext.Provider value={appContext}>
+            <NavigationContext.Provider value={navigationContext}>
+                <LoLContext.Provider value={lolContext}>
+                    {props.children}
+                </LoLContext.Provider>
+            </NavigationContext.Provider>
+        </AppContext.Provider>
     );
 }

@@ -1,0 +1,10 @@
+#page-content-wrapper > div{
+    height: 100%;
+    width: 80vw;
+
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+
+    padding: 20px;
+}

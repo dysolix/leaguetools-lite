@@ -1,0 +1,50 @@
+:root {
+    --primaryColor: #40bd40;
+    --secondaryColor: #3cb33c;
+    --tertiaryColor: #38aa38;
+
+    --primaryBackgroundColor: rgb(88, 88, 88);
+    --secondaryBackgroundColor: rgb(39, 39, 39);
+}
+
+body {
+    margin: 0;
+    padding: 0;
+
+    background-color: var(--primaryBackgroundColor) !important;
+
+    font-family: 'Poppins', sans-serif !important;
+
+    overflow: hidden;
+}
+
+#root {
+    height: 100vh;
+    width: 100vw;
+  
+    display: flex;
+    flex-direction: column;
+  
+    overflow: hidden;
+  }
+  
+  #app-body {
+    width: 100%;
+    flex-grow: 1;
+  
+    overflow: hidden;
+  
+    display: flex;
+    flex-direction: row;
+  }
+  
+  .center {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  input:not(input[type="text"]):not(:disabled):hover,
+  select:not(:disabled):hover {
+    cursor: pointer;
+  }

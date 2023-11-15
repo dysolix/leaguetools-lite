@@ -1,0 +1,8 @@
+#quit-button {
+    position: absolute;
+    left: 0;
+    bottom: 0;
+
+    width: 20vw;
+    height: 6vh;
+}

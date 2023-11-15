@@ -1,1 +1,1 @@
-
+Do not run any external JavaScript in the renderer process, because the entire NodeJS API is available.

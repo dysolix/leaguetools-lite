@@ -1,0 +1,15 @@
+.text {
+    color: white;
+    line-break: anywhere;
+    word-wrap: break-word;
+
+    display: flex;
+}
+
+.text.left {
+    align-items: flex-start;
+}
+
+.text.right {
+    align-items: flex-end;
+}

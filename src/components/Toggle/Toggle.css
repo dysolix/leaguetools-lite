@@ -1,0 +1,8 @@
+.form-check input[type="checkbox"]{
+    margin-bottom: 4.5px;
+    margin-right: 7.5px;
+}
+
+.form-check > label{
+    color: white;
+}

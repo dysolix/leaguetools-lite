@@ -1,0 +1,37 @@
+.sidebar-link{
+    width: 100%;
+    height: 6vh;
+
+    color: white;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    user-select: none;
+    cursor: pointer;
+}
+
+.sidebar-link-paged {
+    justify-content: space-around !important;
+}
+
+.sidebar-link:hover{
+    background-color: var(--primaryColor);
+}
+
+.sidebar-link:active{
+    background-color: var(--tertiaryColor);
+}
+
+.sidebar-link.active{
+    background-color: var(--primaryColor);
+}
+
+.sidebar-link.active:hover{
+    background-color: var(--secondaryColor);
+}
+
+.sidebar-link.active:active{
+    background-color: var(--tertiaryColor);
+}

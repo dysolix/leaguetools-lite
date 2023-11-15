@@ -1,27 +1,20 @@
-import { useContext } from 'react';
 import './App.css';
-import { ContextProviders, LoLContext } from './context';
+import { ContextProviders } from './context';
 import React from 'react';
+import { PageContent, SideBar, TitleBar } from './components';
 
 function App() {
   return (
     <ContextProviders>
       <React.StrictMode>
-        <Test />
+        <TitleBar />
+        <div id="app-body">
+          <SideBar />
+          <PageContent />
+        </div>
       </React.StrictMode>
     </ContextProviders>
   );
-}
-
-function Test() {
-  const lolContext = useContext(LoLContext);
-  return (
-    <div>
-      Connected: {String(lolContext.isConnected)}<br />
-      State: {lolContext.state}<br />
-      Gameflow phase: {lolContext.gameflowPhase}
-    </div>
-  )
 }
 
 export default App;

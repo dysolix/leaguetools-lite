@@ -1,0 +1,36 @@
+.section{
+    width: 50%;
+    height: fit-content;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+
+    user-select: none;
+
+    background-color: var(--secondaryBackgroundColor);
+    border: 15px;
+
+    padding: 10px;
+    padding-bottom: 0;
+
+    margin-bottom: 10px;
+
+    border-radius: 20px;
+}
+
+.section.wide {
+    width: 100%;
+}
+
+.section.force-max-height {
+    height: 100%;
+    margin-bottom: unset;
+    padding-bottom: unset;
+}
+
+.section > *{
+    width: 97.5%;
+    margin-bottom: 10px !important;
+}

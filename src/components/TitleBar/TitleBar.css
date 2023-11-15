@@ -1,0 +1,89 @@
+#title-bar{
+    width: 100%;
+    height: 4vh;
+
+    -webkit-user-select: none;
+    -webkit-app-region: drag;
+
+    background-color: var(--secondaryBackgroundColor);
+
+    display: flex;
+    align-items: center;
+}
+
+#app-title{
+    height: 100%;
+    color: white;
+    text-indent: 1vw;
+
+    font-size: 2.5vh;
+}
+
+#title-bar-right{
+    height: 100%;
+    flex-grow: 1;
+
+    display: flex;
+    align-items: center;
+    flex-direction: row-reverse;
+}
+
+.title-bar-button{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white !important;
+
+    height: 100%;
+    width: 4vh;
+
+    font-size: 3.5vh;
+
+    -webkit-app-region: no-drag;
+
+    cursor: pointer;
+}
+
+.title-bar-button:hover{
+    background-color: var(--primaryBackgroundColor);
+}
+
+#title-bar-connection-state{
+    height: 100%;
+    width: 4vh;
+
+    font-size: 2vh;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    color: #e64242;
+}
+
+#title-bar-app-version {
+    height: 100%;
+    color: white;
+    font-size: 2vh;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#title-bar-update {
+    color: var(--primaryColor) !important;
+}
+
+.spin {
+    animation: spin 2s linear infinite;
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
+}

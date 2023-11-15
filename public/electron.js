@@ -1,12 +1,18 @@
-import { app, BrowserWindow, ipcMain, Tray, nativeImage, Menu, Notification } from 'electron';
+import { app, BrowserWindow, Tray, nativeImage, Menu, ipcMain } from 'electron';
 import path from 'path';
 import fs from 'fs/promises';
 import { fileURLToPath } from 'url';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-const config = { startInSystemTray: false, developerMode: true };
 const iconPath = path.join(__dirname, '/favicon.ico');
+const baseDirPath = app.isPackaged ? app.getPath("userData") : path.join(__dirname, "../development", "./userData");
+const configFilePath = path.join(baseDirPath, "./config.json");
+
+/** @type {Partial<import("../src/configuration.ts").ConfigType>} */
+const config = await fs.readFile(configFilePath, { encoding: "utf-8" }).then(JSON.parse).catch(() => ({ }));
+config.startInSystemTray = config.startInSystemTray ?? false;
+config.developerMode = config.developerMode ?? false;
 
 async function createWindow() {
     const win = new BrowserWindow({
@@ -14,13 +20,15 @@ async function createWindow() {
         height: 700,
         resizable: false,
         webPreferences: {
-            nodeIntegration: true,
+            nodeIntegration: true, // We can enable this because we do not load external scripts in this window
             contextIsolation: false,
-            devTools: !app.isPackaged || config.developerMode
+            devTools: !app.isPackaged || config.developerMode,
+            preload: path.join(__dirname, "preload.mjs")
         },
         frame: false,
         icon: iconPath,
-        show: config.startInSystemTray !== undefined ? !config.startInSystemTray : false
+        show: config.startInSystemTray !== undefined ? !config.startInSystemTray : false,
+        
     });
 
     try {
@@ -48,6 +56,16 @@ function showAndFocusWindow() {
     }
 }
 
+function setAutoStart(value) {
+    if (!app.isPackaged || app.getLoginItemSettings().openAtLogin === value) return;
+
+    app.setLoginItemSettings({
+        openAtLogin: value,
+        path: app.getPath("exe"),
+        args: ["--autostart"]
+    })
+}
+
 var tray = null;
 var win = null;
 var contextMenu = null;
@@ -70,3 +88,11 @@ app.on("ready", async () => {
 
     win.setTitle("LeagueTools");
 });
+
+ipcMain.handle("getBasePath", () => baseDirPath);
+
+ipcMain.handle("exit", (ev, force) => closeToTray && !force ? BrowserWindow.getAllWindows()[0]?.hide() : app.quit());
+ipcMain.handle("minimize", () => BrowserWindow.getFocusedWindow()?.minimize());
+ipcMain.handle("setAutoStart", (ev, autoStart) => setAutoStart(autoStart));
+ipcMain.handle("setCloseToTray", (ev, state) => closeToTray = state);
+ipcMain.handle("restart", () => { app.relaunch(); app.exit(0); })

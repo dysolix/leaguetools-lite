@@ -1,0 +1,43 @@
+.btn{
+    color: white !important;
+}
+
+.btn:active {
+    border-color: transparent !important;
+}
+
+.btn-wide{
+    width: 97.5%;
+}
+  
+.btn-green{
+    background-color: var(--primaryColor) !important;
+}
+  
+.btn-green:hover{
+    background-color: var(--secondaryColor) !important;
+}
+  
+.btn-green:active{
+    background-color: var(--tertiaryColor) !important;
+}
+  
+.btn-red{
+    background-color: #dd3939 !important;
+}
+  
+.btn-red:hover{
+    background-color: #d52424 !important;
+}
+  
+.btn-red:active{
+    background-color: #bf2020 !important;
+}
+
+.btn:disabled{
+    border-color: transparent !important;
+}
+
+input[type="text"] + button{
+    margin-bottom: unset;
+}
