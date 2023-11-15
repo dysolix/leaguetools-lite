@@ -1,7 +1,6 @@
 import HasagiClient, { Hasagi, ChampSelectSession } from "@hasagi/extended";
-import { LCUEndpointResponseType } from "@hasagi/core";
 import { PropsWithChildren, createContext, useEffect, useState } from "react";
-import { Client } from "./hasagi-client.js";
+import { Client } from "./hasagi-client";
 
 // Navigation context
 export const DefaultNavigationContext = {
@@ -81,67 +80,74 @@ export function ContextProviders(props: PropsWithChildren) {
     useEffect(() => {
         if(lolContext.gameflowPhase === "None" && lolContext.state !== "None") {
             setLoLContext(ctx => {
-                ctx.state = "None";
-                delete ctx.lobby;
-                delete ctx.queueState;
-                delete ctx.champSelectSession;
-                delete ctx.liveClientData;
-                delete ctx.endOfGameStats;
-                return ctx;
+                const context = structuredClone(ctx);
+                context.state = "None";
+                delete context.lobby;
+                delete context.queueState;
+                delete context.champSelectSession;
+                delete context.liveClientData;
+                delete context.endOfGameStats;
+                return context;
             });
         } else if (lolContext.gameflowPhase === "Lobby" && lolContext.state !== "Lobby") {
             if(lolContext.lobby !== undefined) 
                 setLoLContext(ctx => {
-                    ctx.state = "Lobby";
-                    ctx.lobby = ctx.lobby!;
-                    delete ctx.queueState;
-                    delete ctx.champSelectSession;
-                    delete ctx.liveClientData;
-                    delete ctx.endOfGameStats;
-                    return ctx;
+                    const context = structuredClone(ctx);
+                    context.state = "Lobby";
+                    context.lobby = ctx.lobby!;
+                    delete context.queueState;
+                    delete context.champSelectSession;
+                    delete context.liveClientData;
+                    delete context.endOfGameStats;
+                    return context;
                 });
         } else if (lolContext.gameflowPhase === "Matchmaking" && lolContext.state !== "InQueue") {
             if(lolContext.lobby !== undefined && lolContext.queueState !== undefined)
                 setLoLContext(ctx => {
-                    ctx.state = "InQueue";
-                    ctx.lobby = ctx.lobby!;
-                    ctx.queueState = ctx.queueState!;
-                    delete ctx.champSelectSession;
-                    delete ctx.liveClientData;
-                    delete ctx.endOfGameStats;
-                    return ctx;
+                    const context = structuredClone(ctx);
+                    context.state = "InQueue";
+                    context.lobby = ctx.lobby!;
+                    context.queueState = ctx.queueState!;
+                    delete context.champSelectSession;
+                    delete context.liveClientData;
+                    delete context.endOfGameStats;
+                    return context;
                 });
         } else if (lolContext.gameflowPhase === "ChampSelect" && lolContext.state !== "ChampSelect") {
             if(lolContext.lobby !== undefined && lolContext.champSelectSession !== undefined)
                 setLoLContext(ctx => {
-                    ctx.state = "ChampSelect";
-                    ctx.lobby = ctx.lobby!;
-                    ctx.champSelectSession = ctx.champSelectSession!;
-                    delete ctx.queueState;
-                    delete ctx.liveClientData;
-                    delete ctx.endOfGameStats;
-                    return ctx;
+                    const context = structuredClone(ctx);
+                    context.state = "ChampSelect";
+                    context.lobby = ctx.lobby!;
+                    context.champSelectSession = ctx.champSelectSession!;
+                    delete context.queueState;
+                    delete context.liveClientData;
+                    delete context.endOfGameStats;
+                    return context;
                 });
         } else if (lolContext.gameflowPhase === "InProgress" && lolContext.state !== "InGame") {
             if(lolContext.lobby !== undefined && lolContext.liveClientData !== undefined)
                 setLoLContext(ctx => {
-                    ctx.state = "InGame";
-                    ctx.lobby = ctx.lobby!;
-                    delete ctx.queueState;
-                    delete ctx.champSelectSession;
-                    delete ctx.endOfGameStats;
-                    return ctx;
+                    const context = structuredClone(ctx);
+                    context.state = "InGame";
+                    context.lobby = ctx.lobby!;
+                    context.liveClientData = ctx.liveClientData!;
+                    delete context.queueState;
+                    delete context.champSelectSession;
+                    delete context.endOfGameStats;
+                    return context;
                 });
         } else if (lolContext.gameflowPhase === "EndOfGame" && lolContext.state !== "PostGame") {
             if(lolContext.lobby !== undefined && lolContext.endOfGameStats !== undefined)
                 setLoLContext(ctx => {
-                    ctx.state = "PostGame";
-                    ctx.lobby = ctx.lobby!;
-                    ctx.endOfGameStats = ctx.endOfGameStats!;
-                    delete ctx.queueState;
-                    delete ctx.champSelectSession;
-                    delete ctx.liveClientData;
-                    return ctx;
+                    const context = structuredClone(ctx);
+                    context.state = "PostGame";
+                    context.lobby = ctx.lobby!;
+                    context.endOfGameStats = ctx.endOfGameStats!;
+                    delete context.queueState;
+                    delete context.champSelectSession;
+                    delete context.liveClientData;
+                    return context;
                 });
         }
     }, [lolContext.champSelectSession, lolContext.endOfGameStats, lolContext.gameflowPhase, lolContext.liveClientData, lolContext.lobby, lolContext.queueState, lolContext.state])
