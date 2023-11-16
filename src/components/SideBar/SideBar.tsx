@@ -5,7 +5,9 @@ import "./SideBar.css";
 export default function SideBar() {
     return (
         <div id="sidebar">
-            <SidebarLink target="settings" title="Settings" />
+            <SidebarLink target="UltimateBravery" title="UltimateBravery" />
+            <SidebarLink target="Miscellaneous" title="Miscellaneous" />
+            <SidebarLink target="Settings" title="Settings" />
             <QuitButton />
         </div>
     );

@@ -15,6 +15,7 @@ const MainProcessIpc = {
     setCloseToTray: (enabled: boolean) => ipcRenderer.invoke('setCloseToTray', enabled) as Promise<void>,
     restart: () => ipcRenderer.invoke('restart') as Promise<void>,
     getBasePath: () => ipcRenderer.invoke('getBasePath') as Promise<string>,
+    sendNotification: (title: string, content: string) => ipcRenderer.invoke("showNotification", title, content)
 }
 
 export default MainProcessIpc;

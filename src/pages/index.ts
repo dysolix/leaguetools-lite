@@ -1,11 +1,15 @@
+import UltimateBravery from "./UltimateBravery";
+import Miscellaneous from "./Miscellaneous";
 import Settings from "./Settings";
 
-export { Settings }
+export { UltimateBravery, Miscellaneous, Settings }
 
 export type Page = keyof typeof Pages
 
 const Pages = {
-    "settings": Settings,
+    "UltimateBravery": UltimateBravery,
+    "Miscellaneous": Miscellaneous,
+    "Settings": Settings,
 }
 
 export default Pages;

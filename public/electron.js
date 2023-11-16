@@ -90,7 +90,7 @@ app.on("ready", async () => {
 });
 
 ipcMain.handle("getBasePath", () => baseDirPath);
-
+ipcMain.handle("showNotification", (ev, title, body) => new Notification({ title, body, icon: iconPath }).show())
 ipcMain.handle("exit", (ev, force) => closeToTray && !force ? BrowserWindow.getAllWindows()[0]?.hide() : app.quit());
 ipcMain.handle("minimize", () => BrowserWindow.getFocusedWindow()?.minimize());
 ipcMain.handle("setAutoStart", (ev, autoStart) => setAutoStart(autoStart));

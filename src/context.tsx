@@ -3,19 +3,21 @@ import { PropsWithChildren, createContext, useEffect, useState } from "react";
 import { Client } from "./hasagi-client";
 import { type Page } from "./pages/index";
 import Configuration, { loadConfig } from "./configuration";
-import MainProcessIpc from "./main-process";
+import { LeagueData, getData } from "./data";
+import { generateUltimateBraveryData } from "./modules/ultimate-bravery";
 
 // App context
 export const DefaultAppContext = {
     config: Configuration.getFullConfig(),
-    baseAppDirectoryPath: null! as string
+    ultimateBraveryData: null! as ReturnType<typeof generateUltimateBraveryData>,
+    setUltimateBraveryData: null! as (data: ReturnType<typeof generateUltimateBraveryData>) => void
 }
 
 export const AppContext = createContext(DefaultAppContext);
 
 // Navigation context
 export const DefaultNavigationContext = {
-    page: "settings" as Page,
+    page: "UltimateBravery" as Page,
     setPage: null! as (page: Page) => void
 }
 
@@ -26,7 +28,7 @@ export const DefaultLoLContext = {
     state: "None" as "Lobby" | "InQueue" | "ChampSelect" | "InGame" | "PostGame" | "None",
     gameflowPhase: "None",
     isConnected: false,
-    runePages: []
+    runePages: [],
 } as {
     isConnected: boolean, runePages: ReadonlyArray<Hasagi.RunePage>,
     gameflowPhase: Hasagi.GameflowPhase, liveClientData?: Awaited<ReturnType<HasagiClient["LiveClient"]["getLiveClientData"]>>,
@@ -46,8 +48,8 @@ export const LoLContext = createContext(DefaultLoLContext);
 export function ContextProviders(props: PropsWithChildren) {
     const [appContext, setAppContext] = useState(DefaultAppContext);
     useEffect(() => {
+        setAppContext(ctx => ({ ...ctx, setUltimateBraveryData: (data) => setAppContext(c => ({ ...c, ultimateBraveryData: data })) }))
         Configuration.setUpdateCallback(config => setAppContext(ctx => ({ ...ctx, config })));
-        console.log("called")
         loadConfig();
     }, []);
 

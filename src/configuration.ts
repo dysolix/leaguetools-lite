@@ -1,8 +1,7 @@
 import path from "path";
 import fs from "fs/promises";
-import { getBasePath } from "./util";
 
-const configPath = path.join(getBasePath(), "config.json");
+const configPath = path.join(window.basePath, "config.json");
 
 const _Configuration = {
     schemaVersion: 1,
