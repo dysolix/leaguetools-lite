@@ -1,12 +1,17 @@
 import "./TitleBar.css";
-import { CgClose, CgSoftwareDownload, CgSpinnerAlt } from "react-icons/cg";
+import { CgClose } from "react-icons/cg";
+import { PiLightning, PiLightningBold, PiLightningFill, PiLightningSlash, PiLightningSlashBold, PiLightningSlashFill, PiPlugsConnectedBold } from "react-icons/pi";
+import { TbPlugConnectedX } from "react-icons/tb";
 import { MdMinimize } from "react-icons/md";
-import { GoDotFill } from "react-icons/go";
 import { useContext, useState } from "react";
 import { LoLContext } from "../../context";
 import MainProcessIpc from "../../main-process";
 
-const APP_VERSION = "0.0.1";
+declare global {
+    interface Window {
+        appVersion: string
+    }
+}
 
 export default function TitleBar() {
     const lolContext = useContext(LoLContext);
@@ -17,12 +22,12 @@ export default function TitleBar() {
                 LeagueTools
             </div>
 
-            <div id="title-bar-connection-state" style={{ color: (lolContext.isConnected ? "var(--primaryColor)" : undefined) }}>
-                <GoDotFill />
+            <div id="title-bar-connection-state" style={{ color: (lolContext.isConnected ? "var(--connectedColor)" : undefined) }}>
+                {lolContext.isConnected ? <PiLightningFill /> : <PiLightningSlashBold />}
             </div>
 
             <div id="title-bar-app-version">
-                {APP_VERSION}
+                {window.appVersion}
             </div>
 
             <div id="title-bar-right">

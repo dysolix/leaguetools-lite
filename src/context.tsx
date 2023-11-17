@@ -1,14 +1,20 @@
 import HasagiClient, { Hasagi, ChampSelectSession } from "@hasagi/extended";
 import { PropsWithChildren, createContext, useEffect, useState } from "react";
-import { Client } from "./hasagi-client";
+import { Client, setClient } from "./hasagi-client";
 import { type Page } from "./pages/index";
-import Configuration, { loadConfig } from "./configuration";
-import { LeagueData, getData } from "./data";
+import Configuration, { type ConfigType, loadConfig } from "./configuration";
+import { LeagueData, getData, loadData } from "./data";
 import { generateUltimateBraveryData } from "./modules/ultimate-bravery";
+import MainProcessIpc from "./main-process";
+import { setBasePath } from "./util";
+import axios from "axios"
 
 // App context
 export const DefaultAppContext = {
-    config: Configuration.getFullConfig(),
+    ready: false,
+    basePath: null! as string,
+    config: null! as ConfigType,
+    data: null! as LeagueData,
     ultimateBraveryData: null! as ReturnType<typeof generateUltimateBraveryData>,
     setUltimateBraveryData: null! as (data: ReturnType<typeof generateUltimateBraveryData>) => void
 }
@@ -50,8 +56,19 @@ export function ContextProviders(props: PropsWithChildren) {
     useEffect(() => {
         setAppContext(ctx => ({ ...ctx, setUltimateBraveryData: (data) => setAppContext(c => ({ ...c, ultimateBraveryData: data })) }))
         Configuration.setUpdateCallback(config => setAppContext(ctx => ({ ...ctx, config })));
-        loadConfig();
+        MainProcessIpc.getBasePath().then((basePath) => {
+            window.basePath = basePath;
+            setBasePath(basePath);
+            setAppContext(ctx => ({ ...ctx, basePath }))
+            loadConfig().then(() => setAppContext(ctx => ({ ...ctx, config: Configuration.getFullConfig() })))
+            loadData().then(() => setAppContext(ctx => ({ ...ctx, data: getData() })))
+        })
     }, []);
+
+    useEffect(() => {
+        if(appContext.basePath !== null && appContext.config !== null && appContext.data !== null)
+            setAppContext(ctx => ({ ...ctx, ready: true }))
+    }, [appContext.basePath, appContext.config, appContext.data])
 
     const [navigationContext, setNavigationContext] = useState(DefaultNavigationContext);
     useEffect(() => {
@@ -61,6 +78,13 @@ export function ContextProviders(props: PropsWithChildren) {
 
     const [lolContext, setLoLContext] = useState(DefaultLoLContext);
     useEffect(() => {
+        setClient(new HasagiClient());
+
+        Client.on("connecting", () => console.log("connecting..."));
+        Client.on("connected", () => console.log("connected"));
+        Client.on("connection-attempt-failed", () => console.log("connection failed..."));
+        Client.on("disconnected", () => console.log("disconnected..."))
+
         Client.on("connection-state-change", (isConnected) => setLoLContext(ctx => ({ ...ctx, isConnected })));
         Client.on("disconnected", () => Client.connect());
         Client.on("rune-pages-update", (runePages) => setLoLContext(ctx => ({ ...ctx, runePages: runePages.filter(r => r.isEditable) })));
@@ -94,7 +118,8 @@ export function ContextProviders(props: PropsWithChildren) {
             setLoLContext(ctx => ({ ...ctx, endOfGameStats }));
         });
 
-        Client.connect();
+        axios.defaults.adapter = ["http", "xhr"]
+        Client.connect()
     }, []);
 
     useEffect(() => {

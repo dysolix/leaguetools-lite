@@ -4,7 +4,7 @@
   "main": "public/electron.js",
   "private": true,
   "dependencies": {
-    "@hasagi/data": "^0.1.1",
+    "@hasagi/data": "^0.3.0",
     "@hasagi/extended": "^0.0.38"
   },
   "scripts": {

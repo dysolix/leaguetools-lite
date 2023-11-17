@@ -4,5 +4,10 @@
 }
 
 .form-check > label{
-    color: white;
+    color: var(--textColor);
+}
+
+.form-check-input:checked {
+    background-color: var(--checkedToggleColor);
+    border-color: var(--checkedToggleColor);
 }

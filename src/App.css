@@ -5,6 +5,17 @@
 
     --primaryBackgroundColor: rgb(88, 88, 88);
     --secondaryBackgroundColor: rgb(39, 39, 39);
+
+    --textColor: white;
+
+    --checkedToggleColor: #0d6efd;
+
+    --connectedColor: var(--primaryColor);
+    --disconnectedColor: #e64242;
+}
+
+.form-select:focus {
+  border-color: var(--primaryColor) !important;
 }
 
 body {

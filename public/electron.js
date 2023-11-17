@@ -89,10 +89,13 @@ app.on("ready", async () => {
     win.setTitle("LeagueTools");
 });
 
+console.log(app.getVersion())
+
+ipcMain.handle("getVersion", () => (app.getVersion() + (app.isPackaged ? "" : "-dev")))
 ipcMain.handle("getBasePath", () => baseDirPath);
 ipcMain.handle("showNotification", (ev, title, body) => new Notification({ title, body, icon: iconPath }).show())
 ipcMain.handle("exit", (ev, force) => closeToTray && !force ? BrowserWindow.getAllWindows()[0]?.hide() : app.quit());
 ipcMain.handle("minimize", () => BrowserWindow.getFocusedWindow()?.minimize());
 ipcMain.handle("setAutoStart", (ev, autoStart) => setAutoStart(autoStart));
 ipcMain.handle("setCloseToTray", (ev, state) => closeToTray = state);
-ipcMain.handle("restart", () => { app.relaunch(); app.exit(0); })
+ipcMain.handle("restart", () => { if(!app.isPackaged) return; app.relaunch(); app.exit(0); })

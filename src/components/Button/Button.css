@@ -1,5 +1,5 @@
 .btn{
-    color: white !important;
+    color: var(--textColor) !important;
 }
 
 .btn:active {

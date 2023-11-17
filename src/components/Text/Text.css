@@ -1,5 +1,5 @@
 .text {
-    color: white;
+    color: var(--textColor);
     line-break: anywhere;
     word-wrap: break-word;
 

@@ -1,5 +1,7 @@
-import { Collections } from "@hasagi/data";
-
+import { Collections, DataDragon, MerakiAnalytics } from "@hasagi/data";
+import path from "path";
+import fs from "fs/promises";
+import { getBasePath } from "./util";
 export interface ILeagueData {
     champions: Collections.DDragonChampionCollection["entries"],
     runes: Collections.DDragonRuneCollection["entries"],
@@ -9,33 +11,34 @@ export interface ILeagueData {
 }
 
 export class LeagueData {
-    private _champions: Collections.DDragonChampionCollection["entries"];
-    private _runes: Collections.DDragonRuneCollection["entries"];
-    private _summonerSpells: Collections.DDragonSummonerSpellCollection["entries"];
-    private _items: Collections.MerakiItemCollection["entries"];
+    private _champions: Collections.DDragonChampionCollection;
+    private _runes: Collections.DDragonRuneCollection;
+    private _summonerSpells: Collections.DDragonSummonerSpellCollection;
+    private _items: Collections.MerakiItemCollection;
     public latestPatch: string;
 
     public get champions() {
-        return new Collections.DDragonChampionCollection(structuredClone(this._champions));
+        return this._champions.clone();
     }
 
     public get runes() {
-        return new Collections.DDragonRuneCollection(structuredClone(this._runes));
+        return this._runes.clone();
     }
 
     public get summonerSpells() {
-        return new Collections.DDragonSummonerSpellCollection(structuredClone(this._summonerSpells));
+        return this._summonerSpells.clone();
     }
 
     public get items() {
-        return new Collections.MerakiItemCollection(structuredClone(this._items));
+        return this._items.clone();
     }
 
     public constructor(data: ILeagueData) {
-        this._champions = data.champions;
-        this._runes = data.runes;
-        this._summonerSpells = data.summonerSpells;
-        this._items = data.items;
+        console.log(data);
+        this._champions = new Collections.DDragonChampionCollection(data.champions as any);
+        this._runes = new Collections.DDragonRuneCollection(data.runes as any);
+        this._summonerSpells = new Collections.DDragonSummonerSpellCollection(data.summonerSpells as any);
+        this._items = new Collections.MerakiItemCollection(data.items as any);
         this.latestPatch = data.patch;
     }
 
@@ -50,14 +53,44 @@ export class LeagueData {
     }
 }
 
-declare global {
-    interface Window {
-        loadedLeagueData: ILeagueData
+let _data: LeagueData;
+
+export async function loadData() {
+    const latestPatch = await DataDragon.getLatestPatch("euw");
+
+    try {
+        const data = await fs.readFile(path.join(getBasePath(), "./data.json"), "utf-8").then(JSON.parse);
+        if (data.patch !== latestPatch)
+            throw new Error();
+
+        if (data.champions === undefined)
+            throw new Error();
+
+        if (data.runes === undefined)
+            throw new Error();
+
+        if (data.summonerSpells === undefined)
+            throw new Error();
+
+        if (data.items === undefined)
+            throw new Error();
+
+        _data = new LeagueData(data);
+
+    } catch (e) {
+        const downloadedData = {
+            patch: latestPatch,
+            champions: await DataDragon.getChampions(latestPatch).then(d => Object.fromEntries(d.entries.entries())),
+            runes: await DataDragon.getRunes(latestPatch).then(d => Object.fromEntries(d.entries.entries())),
+            summonerSpells: await DataDragon.getSummonerSpells(latestPatch).then(d => Object.fromEntries(d.entries.entries())),
+            items: await MerakiAnalytics.getItems().then(d => Object.fromEntries(d.entries.entries()))
+        }
+
+        _data = new LeagueData(downloadedData as any);
+        await fs.writeFile(path.join(getBasePath(), "./data.json"), JSON.stringify(downloadedData));
     }
 }
 
-const _data: LeagueData = new LeagueData(window.loadedLeagueData);
-
 export function getData() {
-    return _data; 
+    return _data;
 }

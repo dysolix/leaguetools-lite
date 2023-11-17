@@ -24,18 +24,18 @@ export function generateUltimateBraveryData(config?: UltimateBraveryConfig) {
     const data = getData(); 
     const items = data.items;
 
-    const summonerSpells = data.summonerSpells.entries.filter(spell => spell.modes.includes("CLASSIC"));
-    const boots = items.entries.filter(item => item.maps?.includes(11) && item.rank.includes("BOOTS") && item.buildsInto.length === 0);
-    const mythics = items.entries.filter(item => item.maps?.includes(11) && item.rank.includes("MYTHIC") && item.shop.purchasable);
-    const itemPool = items.entries.filter(item => item.maps?.includes(11) && item.rank.includes("LEGENDARY") && item.shop.purchasable);
-    const jungleItems = items.entries.filter(item => item.maps?.includes(11) && item.nicknames.includes("jungle") && item.shop.purchasable);
-    const supportItems = items.entries.filter(item => item.maps?.includes(11) && [3850, 3854, 3858, 3862].includes(item.id));
-    const trinkets = items.entries.filter(item => item.maps?.includes(11) && [3340, 3364, 3363].includes(item.id));
+    const summonerSpells = data.summonerSpells.values().filter(spell => spell.modes.includes("CLASSIC"));
+    const boots = items.values().filter(item => item.maps?.includes(11) && item.rank.includes("BOOTS") && item.buildsInto.length === 0);
+    const mythics = items.values().filter(item => item.maps?.includes(11) && item.rank.includes("MYTHIC") && item.shop.purchasable);
+    const itemPool = items.values().filter(item => item.maps?.includes(11) && item.rank.includes("LEGENDARY") && item.shop.purchasable);
+    const jungleItems = items.values().filter(item => item.maps?.includes(11) && item.nicknames.includes("jungle") && item.shop.purchasable);
+    const supportItems = items.values().filter(item => item.maps?.includes(11) && [3850, 3854, 3858, 3862].includes(item.id));
+    const trinkets = items.values().filter(item => item.maps?.includes(11) && [3340, 3364, 3363].includes(item.id));
 
     const selectedLane = lanes[randomInt(0, lanes.length)];
     const selectedItems: DataTypes.XMerakiAnalytics.Item[] = [];
     const selectedSummonerSpells: DataTypes.DataDragon.SummonerSpell[] = [];
-    const selectedChampion = data.champions.entries[randomInt(0, data.champions.entries.length)];
+    const selectedChampion = data.champions.values()[randomInt(0, data.champions.values().length)];
     const selectedTrinket = trinkets[randomInt(0, trinkets.length)];
     const selectedJungleItem = jungleItems[randomInt(0, jungleItems.length)];
     const abilityOrder = abilities.sort(() => Math.random() - 0.5).sort(() => Math.random() - 0.5).sort(() => Math.random() - 0.5);
@@ -55,7 +55,7 @@ export function generateUltimateBraveryData(config?: UltimateBraveryConfig) {
     }
 
     while (selectedRuneTrees.length < 2) {
-        const tree = data.runes.entries[randomInt(0, data.runes.entries.length)];
+        const tree = data.runes.values()[randomInt(0, data.runes.values().length)];
         if (!selectedRuneTrees.includes(tree)) {
             selectedRuneTrees.push(tree);
         }

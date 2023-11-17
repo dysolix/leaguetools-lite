@@ -1,12 +1,10 @@
 import path from "path";
 import fs from "fs/promises";
 
-const configPath = path.join(window.basePath, "config.json");
+const getConfigPath = () => path.join(window.basePath, "config.json")
 
 const _Configuration = {
     schemaVersion: 1,
-
-    developerMode: false,
 
     startInSystemTray: false,
     minimizeToSystemTray: false,
@@ -20,6 +18,11 @@ const _Configuration = {
 
     enableAutomaticLoadoutImport: false,
     disableAutomaticLoadoutImportOnPBE: true,
+
+    developerMode: false,
+    enableSchemaUpdater: false,
+
+    theme: "dark/green"
 }
 
 let updateCallback = null as ((config: ConfigType) => void) | null;
@@ -73,13 +76,13 @@ function upgradeConfig(config: Partial<ConfigType>) {
 
 export async function loadConfig() {
     try {
-        const config = await fs.readFile(configPath, { encoding: "utf-8" }).then(JSON.parse) as Partial<ConfigType>;
+        const config = await fs.readFile(getConfigPath(), { encoding: "utf-8" }).then(JSON.parse) as Partial<ConfigType>;
         Configuration.load(config);
     } catch (e) {
-        await fs.writeFile(configPath, JSON.stringify(_Configuration, null, 2), { encoding: "utf-8" });
+        saveConfig();
     }
 }
 
 async function saveConfig() {
-    await fs.writeFile(configPath, JSON.stringify(_Configuration, null, 2), { encoding: "utf-8" });
+    await fs.writeFile(getConfigPath(), JSON.stringify(_Configuration, null, 2), { encoding: "utf-8" });
 }

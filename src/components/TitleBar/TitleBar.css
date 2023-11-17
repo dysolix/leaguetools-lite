@@ -13,7 +13,7 @@
 
 #app-title{
     height: 100%;
-    color: white;
+    color: var(--textColor);
     text-indent: 1vw;
 
     font-size: 2.5vh;
@@ -32,7 +32,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    color: white !important;
+    color: var(--textColor) !important;
 
     height: 100%;
     width: 4vh;
@@ -58,12 +58,12 @@
     align-items: center;
     justify-content: center;
 
-    color: #e64242;
+    color: var(--disconnectedColor);
 }
 
 #title-bar-app-version {
     height: 100%;
-    color: white;
+    color: var(--textColor);
     font-size: 2vh;
 
     display: flex;
