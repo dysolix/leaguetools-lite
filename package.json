@@ -12,6 +12,7 @@
     "dependencies": {
         "@hasagi/data": "^0.3.0",
         "@hasagi/extended": "^0.0.41",
+        "electron-dl": "^3.5.1",
         "json5": "^2.2.3"
     },
     "scripts": {

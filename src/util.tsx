@@ -12,6 +12,8 @@ import fs from "fs/promises";
 
 let basePath: string;
 
+export const delay = (ms: number) => new Promise(res => setTimeout(res, ms));
+
 export function setBasePath(path: string) {
     basePath = path;
 }

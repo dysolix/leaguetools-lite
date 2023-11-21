@@ -2,11 +2,14 @@ import { app, BrowserWindow, Tray, nativeImage, Menu, ipcMain } from 'electron';
 import path from 'path';
 import fs from 'fs/promises';
 import { fileURLToPath } from 'url';
+import { exec } from 'child_process';
+import { download } from "electron-dl";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const iconPath = path.join(__dirname, '/favicon.ico');
 const baseDirPath = app.isPackaged ? app.getPath("userData") : path.join(__dirname, "../development", "./userData");
+const updateDirectory = path.join(baseDirPath, "./update_cache");
 const configFilePath = path.join(baseDirPath, "./config.json");
 
 /** @type {Partial<import("../src/configuration.ts").ConfigType>} */
@@ -122,4 +125,16 @@ ipcMain.handle("restart", () => {
     forceQuit = true;
     app.relaunch(); 
     app.exit(0); 
+})
+
+var isUpdating = false;
+
+ipcMain.handle("installUpdate", async (ev, info) => {
+    if(isUpdating)
+        return;
+
+    isUpdating = true;
+    const completedDownload = await download(win, info.url, { directory: updateDirectory, onCompleted: file => {
+        exec(path.join(updateDirectory, `LeagueTools_${info.version}.exe`) + " /S --force-run").on("exit", () => isUpdating = false);
+    } });
 })

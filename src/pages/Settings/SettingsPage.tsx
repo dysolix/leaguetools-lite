@@ -40,6 +40,12 @@ export default function SettingsPage() {
                 {appContext.config.lockfilePath !== null ? <TextInput placeholder="Absolute path to lockfile" value={appContext.config.lockfilePath} valid={path.isAbsolute(appContext.config.lockfilePath)} onChange={ev => Configuration.set("lockfilePath", ev.target.value)} /> : null}
             </Section>
             <Section>
+                <Toggle label="Enable auto updater" tooltip="Only activate this if you trust the auto update source below" state={appContext.config.enableAutoUpdater} setState={state => Configuration.set("enableAutoUpdater", state)}/>
+                <TextInput placeholder="username/repo" value={appContext.config.autoUpdaterGitHubRepo} valid={appContext.config.autoUpdaterGitHubRepo.split("/").length === 2} onChange={ev => {
+                    Configuration.set("autoUpdaterGitHubRepo", ev.target.value);
+                }}/>
+            </Section>
+            <Section>
                 <Toggle label="Enable developer mode" tooltip="Requires a restart to show effect." state={appContext.config.developerMode} setState={newState => {
                     Configuration.set("developerMode", newState);
                     MainProcessIpc.restart();

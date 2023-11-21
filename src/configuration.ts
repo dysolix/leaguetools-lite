@@ -23,6 +23,9 @@ const _Configuration = {
     theme: "black/red",
 
     lockfilePath: null as string | null,
+
+    enableAutoUpdater: false,
+    autoUpdaterGitHubRepo: "dysolix/leaguetools-lite",
 }
 
 let updateCallback = null as ((config: ConfigType) => void) | null;

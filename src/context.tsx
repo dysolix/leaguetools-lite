@@ -6,12 +6,13 @@ import Configuration, { type ConfigType, loadConfig } from "./configuration";
 import { LeagueData, getData, loadData } from "./data";
 import { generateUltimateBraveryData } from "./modules/ultimate-bravery";
 import MainProcessIpc from "./main-process";
-import { setBasePath } from "./util";
+import { delay, setBasePath } from "./util";
 import os from "os"
 import { ColorTheme, getAllThemes } from "./manager/theme-manager";
 import { LoadoutPresetEntry, AutoLoadout, LoadoutPreset, AutoLoadoutEntry } from "./manager/loadout-manager";
 import { AutoRuneEntry, AutoRunes, RunePages, SavedRunePage } from "./manager/rune-manager";
 import path from "path";
+import { checkForUpdates } from "./updater";
 
 // App context
 export const DefaultAppContext = {
@@ -20,6 +21,7 @@ export const DefaultAppContext = {
     config: null! as ConfigType,
     data: null! as LeagueData,
     themes: null! as ColorTheme[],
+    updateInfo: null as { version: string, url: string } | null,
 }
 
 // Module context
@@ -29,7 +31,7 @@ export const DefaultModuleContext = {
 
     loadoutPresets: null! as Array<LoadoutPresetEntry>,
     autoLoadouts: null! as Array<AutoLoadoutEntry>,
-    
+
     savedRunePages: null! as Array<SavedRunePage>,
     autoRuneEntries: null! as Array<AutoRuneEntry>,
 }
@@ -78,7 +80,24 @@ export function ContextProviders(props: PropsWithChildren) {
                 window.basePath = basePath;
                 setBasePath(basePath);
                 setAppContext(ctx => ({ ...ctx, basePath }))
-                loadConfig().then(() => setAppContext(ctx => ({ ...ctx, config: Configuration.getFullConfig() })))
+                loadConfig().then(() => setAppContext(ctx => ({ ...ctx, config: Configuration.getFullConfig() }))).then(async () => {
+                    while (true) {
+                        console.debug("Checking for updates...")
+                        if (!Configuration.get("enableAutoUpdater")){
+                            await delay(60000);
+                            continue;
+                        }
+    
+                        const updateInfo = await checkForUpdates();
+                        if (!updateInfo){
+                            await delay(60000);
+                            continue;
+                        }
+    
+                        setAppContext(ctx => ({ ...ctx, updateInfo }));
+                        break;
+                    }
+                })
                 loadData().then(() => setAppContext(ctx => ({ ...ctx, data: getData() })))
             })
         }
@@ -151,11 +170,11 @@ export function ContextProviders(props: PropsWithChildren) {
     }, []);
 
     useEffect(() => {
-        if(!appContext.config || appContext.ready)
+        if (!appContext.config || appContext.ready)
             return;
 
         const lockfilePath = appContext.config.lockfilePath ?? process.env["LEAGUE_TOOLS_LOCKFILE_PATH"] ?? null;
-        if(lockfilePath && path.isAbsolute(lockfilePath)) {
+        if (lockfilePath && path.isAbsolute(lockfilePath)) {
             console.log("lockfile");
             Client.connect({ authenticationStrategy: "lockfile", lockfile: lockfilePath });
             Client.on("disconnected", () => Client.connect({ authenticationStrategy: "lockfile", lockfile: lockfilePath }));

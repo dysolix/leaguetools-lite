@@ -1,10 +1,10 @@
 import "./TitleBar.css";
-import { CgClose } from "react-icons/cg";
+import { CgClose, CgSoftwareDownload, CgSpinnerAlt } from "react-icons/cg";
 import { PiLightning, PiLightningBold, PiLightningFill, PiLightningSlash, PiLightningSlashBold, PiLightningSlashFill, PiPlugsConnectedBold } from "react-icons/pi";
 import { TbPlugConnectedX } from "react-icons/tb";
 import { MdMinimize } from "react-icons/md";
 import { useContext, useState } from "react";
-import { LoLContext } from "../../context";
+import { AppContext, LoLContext } from "../../context";
 import MainProcessIpc from "../../main-process";
 
 declare global {
@@ -14,6 +14,8 @@ declare global {
 }
 
 export default function TitleBar() {
+    const [isUpdating, setUpdating] = useState(false);
+    const appContext = useContext(AppContext);
     const lolContext = useContext(LoLContext);
 
     return (
@@ -37,6 +39,15 @@ export default function TitleBar() {
 
                 <div id="title-bar-minimize" className="title-bar-button" onClick={() => MainProcessIpc.minimize()}>
                     <MdMinimize />
+                </div>
+
+                <div title={appContext.updateInfo?.version ? `Update to version ${appContext.updateInfo.version}` : ""} id="title-bar-update" className="title-bar-button" style={{ display: appContext.updateInfo === null ? "none" : undefined }} onClick={() => {
+                    if (appContext.updateInfo && !isUpdating) {
+                        MainProcessIpc.installUpdate(appContext.updateInfo);
+                        setUpdating(true);
+                    }
+                }}>
+                    {isUpdating ? <div className="spin"> <CgSpinnerAlt /> </div> : <CgSoftwareDownload />}
                 </div>
             </div>
         </div>
