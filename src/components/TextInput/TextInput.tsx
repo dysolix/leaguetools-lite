@@ -10,11 +10,11 @@ export default function TextInput({ className, type, formText, valid, ...props}:
     if(formText){
         return (
             <div className="input-group" style={{ flexDirection: "column" }}>
-                <input {...props} className={className} type={type} style={{ ...props.style, width: "unset", borderTopRightRadius: "0.375rem", borderBottomRightRadius: "0.375rem" }} />
+                <input {...props} spellCheck={false} className={className} type={type} style={{ ...props.style, width: "unset", borderTopRightRadius: "0.375rem", borderBottomRightRadius: "0.375rem" }} />
                 <div style={{ marginBottom: "0" }} className="form-text">{formText}</div>
             </div>
         );
     }
 
-    return <input {...props} className={className} type={type} />;
+    return <input {...props} spellCheck={false} className={className} type={type} />;
 }
