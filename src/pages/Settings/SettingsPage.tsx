@@ -40,8 +40,8 @@ export default function SettingsPage() {
                 {appContext.config.lockfilePath !== null ? <TextInput placeholder="Absolute path to lockfile" value={appContext.config.lockfilePath} valid={path.isAbsolute(appContext.config.lockfilePath)} onChange={ev => Configuration.set("lockfilePath", ev.target.value)} /> : null}
             </Section>
             <Section>
-                <Toggle label="Enable auto updater" tooltip="Only activate this if you trust the auto update source below" state={appContext.config.enableAutoUpdater} setState={state => Configuration.set("enableAutoUpdater", state)}/>
-                <TextInput placeholder="username/repo" value={appContext.config.autoUpdaterGitHubRepo} valid={appContext.config.autoUpdaterGitHubRepo.split("/").length === 2} onChange={ev => {
+                <Toggle label="Enable auto updater" tooltip="Only activate this if you trust the auto update source below. Use at own risk." state={appContext.config.enableAutoUpdater} setState={state => Configuration.set("enableAutoUpdater", state)}/>
+                <TextInput placeholder="username/repo" title="Do not change this if you don't know what you're doing" value={appContext.config.autoUpdaterGitHubRepo} valid={appContext.config.autoUpdaterGitHubRepo.split("/").length === 2} onChange={ev => {
                     Configuration.set("autoUpdaterGitHubRepo", ev.target.value);
                 }}/>
             </Section>
