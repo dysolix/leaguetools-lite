@@ -107,7 +107,7 @@ app.on("ready", async () => {
     })
 });
 
-ipcMain.handle("getVersion", () => (app.getVersion() + (app.isPackaged ? "-beta" : "-dev")))
+ipcMain.handle("getVersion", () => (app.getVersion() + (app.isPackaged ? "" : "-dev")))
 ipcMain.handle("getBasePath", () => baseDirPath);
 ipcMain.handle("showNotification", (ev, title, body) => new Notification({ title, body, icon: iconPath }).show())
 ipcMain.handle("exit", (ev, force) => {
