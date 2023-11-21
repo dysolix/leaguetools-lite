@@ -2,7 +2,7 @@
     width: 100%;
     height: 6vh;
 
-    color: var(--textColor);
+    color: var(--text-color);
 
     display: flex;
     align-items: center;
@@ -17,21 +17,21 @@
 }
 
 .sidebar-link:hover{
-    background-color: var(--primaryColor);
+    background-color: var(--primary-color);
 }
 
 .sidebar-link:active{
-    background-color: var(--tertiaryColor);
+    background-color: var(--tertiary-color);
 }
 
 .sidebar-link.active{
-    background-color: var(--primaryColor);
+    background-color: var(--primary-color);
 }
 
 .sidebar-link.active:hover{
-    background-color: var(--secondaryColor);
+    background-color: var(--secondary-color);
 }
 
 .sidebar-link.active:active{
-    background-color: var(--tertiaryColor);
+    background-color: var(--tertiary-color);
 }

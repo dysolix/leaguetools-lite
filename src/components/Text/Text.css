@@ -1,15 +1,20 @@
 .text {
-    color: var(--textColor);
+    color: var(--text-color);
     line-break: anywhere;
     word-wrap: break-word;
 
     display: flex;
+    flex-direction: column;
 }
 
 .text.left {
-    align-items: flex-start;
+    justify-content: left;
 }
 
 .text.right {
-    align-items: flex-end;
+    justify-content: right;
+}
+
+.text.center {
+    justify-content: center;
 }

@@ -8,6 +8,7 @@ import MainProcessIpc from './main-process';
 import { Section } from './components';
 import { useContext, useEffect } from 'react';
 import { AppContext, NavigationContext } from './context';
+import fs from "fs/promises";
 
 let basePath: string;
 
@@ -69,77 +70,14 @@ export function LargePageText(props: { text: string }) {
 export function ThemeHandler() {
     const appContext = useContext(AppContext);
     useEffect(() => {
-        if (!appContext.ready || !appContext.config?.theme)
+        if (appContext.themes === null || appContext.config === null)
             return;
-
-        const root = document.querySelector(':root')! as HTMLElement;
-        switch (appContext.config.theme) {
-            default:
-            case "dark/green":
-                root.style.setProperty('--primaryColor', '#40bd40');
-                root.style.setProperty('--secondaryColor', '#3cb33c');
-                root.style.setProperty('--tertiaryColor', '#38aa38');
-
-                root.style.setProperty('--primaryBackgroundColor', 'rgb(88, 88, 88)');
-                root.style.setProperty('--secondaryBackgroundColor', 'rgb(39, 39, 39)');
-
-                root.style.setProperty('--textColor', 'white');
-
-                root.style.setProperty("--checkedToggleColor", "var(--primaryColor)")
-
-                root.style.setProperty("--connectedColor", "var(--primaryColor)")
-                root.style.setProperty("--disconnectedColor", "#e64242")
-                break;
-
-            case "dark/blue":
-                root.style.setProperty('--primaryColor', '#0098ff');
-                root.style.setProperty('--secondaryColor', '#0080d5');
-                root.style.setProperty('--tertiaryColor', '#007acc');
-
-                root.style.setProperty('--primaryBackgroundColor', 'rgb(88, 88, 88)');
-                root.style.setProperty('--secondaryBackgroundColor', 'rgb(39, 39, 39)');
-
-                root.style.setProperty('--textColor', 'white');
-
-                root.style.setProperty("--checkedToggleColor", "var(--primaryColor)")
-
-                root.style.setProperty("--connectedColor", "var(--primaryColor)")
-                root.style.setProperty("--disconnectedColor", "#e64242")
-                break;
-
-            case "dark/purple":
-                root.style.setProperty('--primaryColor', '#6c00ff');
-                root.style.setProperty('--secondaryColor', '#5f00df');
-                root.style.setProperty('--tertiaryColor', '#5800cf');
-
-                root.style.setProperty('--primaryBackgroundColor', 'rgb(88, 88, 88)');
-                root.style.setProperty('--secondaryBackgroundColor', 'rgb(39, 39, 39)');
-
-                root.style.setProperty('--textColor', 'white');
-
-                root.style.setProperty("--checkedToggleColor", "var(--primaryColor)")
-
-                root.style.setProperty("--connectedColor", "var(--primaryColor)")
-                root.style.setProperty("--disconnectedColor", "#4f00bb")
-                break;
-
-            case "light/blue":
-                root.style.setProperty('--primaryColor', '#0098ff');
-                root.style.setProperty('--secondaryColor', '#0080d5');
-                root.style.setProperty('--tertiaryColor', '#007acc');
-
-                root.style.setProperty('--primaryBackgroundColor', 'rgb(255 255 255)');
-                root.style.setProperty('--secondaryBackgroundColor', 'rgb(210 238 255)');
-
-                root.style.setProperty('--textColor', 'black');
-
-                root.style.setProperty("--checkedToggleColor", "#0d6efd")
-
-                root.style.setProperty("--connectedColor", "var(--primaryColor)")
-                root.style.setProperty("--disconnectedColor", "#e64242")
-                break
+        
+        const theme = appContext.themes.find(theme => theme.name === appContext.config.theme);
+        if(theme) {
+            theme.load();
         }
-    }, [appContext.ready, appContext.config, appContext.config?.theme]);
+    }, [appContext.config, appContext.config?.theme, appContext.themes]);
 
     return null;
 }

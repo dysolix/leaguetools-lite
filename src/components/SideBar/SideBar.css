@@ -2,7 +2,7 @@
     height: 100%;
     width: 20vw;
 
-    background-color: var(--secondaryBackgroundColor);
+    background-color: var(--secondary-background-color);
 
     overflow-y: scroll;
 }

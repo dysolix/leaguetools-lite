@@ -10,6 +10,8 @@ export default function SideBar() {
 
     return (
         <div id="sidebar">
+            <SidebarLink target="Runes" title="Runes" pages={["Runes", "AutoRunes"]} />
+            <SidebarLink target="Loadouts" title={navContext.page === "AutoLoadouts" ? "AutoLoadouts" : "Loadouts"} pages={["Loadouts", "AutoLoadouts"]} />
             <SidebarLink target="UltimateBravery" title="UltimateBravery" />
             <SidebarLink target="Miscellaneous" title="Miscellaneous" />
             <SidebarLink target="Settings" title={navContext.page === "DeveloperSettings" ? "Developer Settings" : "Settings"} pages={appContext.ready && appContext.config.developerMode ? ["Settings", "DeveloperSettings"] : ["Settings"]} />

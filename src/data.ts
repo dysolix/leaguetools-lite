@@ -34,7 +34,6 @@ export class LeagueData {
     }
 
     public constructor(data: ILeagueData) {
-        console.log(data);
         this._champions = new Collections.DDragonChampionCollection(data.champions as any);
         this._runes = new Collections.DDragonRuneCollection(data.runes as any);
         this._summonerSpells = new Collections.DDragonSummonerSpellCollection(data.summonerSpells as any);

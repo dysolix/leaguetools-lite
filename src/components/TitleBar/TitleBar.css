@@ -5,7 +5,7 @@
     -webkit-user-select: none;
     -webkit-app-region: drag;
 
-    background-color: var(--secondaryBackgroundColor);
+    background-color: var(--secondary-background-color);
 
     display: flex;
     align-items: center;
@@ -13,7 +13,7 @@
 
 #app-title{
     height: 100%;
-    color: var(--textColor);
+    color: var(--text-color);
     text-indent: 1vw;
 
     font-size: 2.5vh;
@@ -32,7 +32,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    color: var(--textColor) !important;
+    color: var(--text-color) !important;
 
     height: 100%;
     width: 4vh;
@@ -45,7 +45,7 @@
 }
 
 .title-bar-button:hover{
-    background-color: var(--primaryBackgroundColor);
+    background-color: var(--primary-background-color);
 }
 
 #title-bar-connection-state{
@@ -58,12 +58,12 @@
     align-items: center;
     justify-content: center;
 
-    color: var(--disconnectedColor);
+    color: var(--disconnected-color);
 }
 
 #title-bar-app-version {
     height: 100%;
-    color: var(--textColor);
+    color: var(--text-color);
     font-size: 2vh;
 
     display: flex;
@@ -72,7 +72,7 @@
 }
 
 #title-bar-update {
-    color: var(--primaryColor) !important;
+    color: var(--primary-color) !important;
 }
 
 .spin {

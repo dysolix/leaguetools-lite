@@ -22,7 +22,7 @@ export default function TitleBar() {
                 LeagueTools
             </div>
 
-            <div id="title-bar-connection-state" style={{ color: (lolContext.isConnected ? "var(--connectedColor)" : undefined) }}>
+            <div id="title-bar-connection-state" style={{ color: (lolContext.isConnected ? "var(--connected-color)" : undefined) }}>
                 {lolContext.isConnected ? <PiLightningFill /> : <PiLightningSlashBold />}
             </div>
 

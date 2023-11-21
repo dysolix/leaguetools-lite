@@ -1,0 +1,15 @@
+extends: "react-cra"
+productName: "LeagueTools"
+appId: "de.dysolix.leaguetools"
+copyright: "Copyright © year ${author}"
+win:
+  target: "nsis"
+linux:
+  target: "AppImage"
+  category: "Utility"
+nsis:
+  artifactName: "LeagueTools_${version}.${ext}"
+  uninstallDisplayName: "LeagueTools"
+  installerIcon: "public/favicon.ico"
+appImage:
+  artifactName: "LeagueTools_${version}.${ext}"

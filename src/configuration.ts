@@ -13,16 +13,16 @@ const _Configuration = {
     runeImportPrefix: "[LT]",
     enableAutomaticRuneImport: false,
 
-    enableMagicalFootwearReplacer: false,
     enableDefaultSkinAlert: false,
 
     enableAutomaticLoadoutImport: false,
     disableAutomaticLoadoutImportOnPBE: true,
 
     developerMode: false,
-    enableSchemaUpdater: false,
 
-    theme: "dark/green"
+    theme: "black/red",
+
+    lockfilePath: null as string | null,
 }
 
 let updateCallback = null as ((config: ConfigType) => void) | null;

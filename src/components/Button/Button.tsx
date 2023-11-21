@@ -1,8 +1,10 @@
 import "./Button.css";
 
 export type ButtonColor = (
-    "green" |
-    "red"
+    | "green"
+    | "red"
+    | "primary"
+    | "caution"
 )
 
 export type ButtonProps = {
@@ -12,7 +14,7 @@ export type ButtonProps = {
 } & React.DetailedHTMLProps<React.ButtonHTMLAttributes<HTMLButtonElement>, HTMLButtonElement>
 
 export default function Button({ className, type, label, color, wide, ...props }: ButtonProps){
-    className = `btn${wide ? " btn-wide" : ""} btn-${color ?? "green"}`;
+    className = `btn${wide ? " btn-wide" : ""} lt-btn-${color ?? "primary"}`;
     type = type ?? "button";
 
     return (

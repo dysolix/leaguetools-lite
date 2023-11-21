@@ -1,37 +1,61 @@
 .btn{
-    color: var(--textColor) !important;
+    color: var(--text-color) !important;
 }
 
 .btn:active {
     border-color: transparent !important;
 }
 
-.btn-wide{
+.lt-btn-wide{
     width: 97.5%;
 }
-  
-.btn-green{
-    background-color: var(--primaryColor) !important;
+
+.lt-btn-primary {
+    background-color: var(--primary-color) !important;
+}
+
+.lt-btn-primary:hover {
+    background-color: var(--secondary-color) !important;
+}
+
+.lt-btn-primary:active {
+    background-color: var(--tertiary-color) !important;
+}
+
+.lt-btn-caution {
+    background-color: var(--error-tone-1) !important;
+}
+
+.lt-btn-caution:hover {
+    background-color: var(--error-tone-2) !important;
+}
+
+.lt-btn-caution:active {
+    background-color: var(--error-tone-3) !important;
+}
+
+.lt-btn-green{
+    background-color: var(--green-1) !important;
 }
   
-.btn-green:hover{
-    background-color: var(--secondaryColor) !important;
+.lt-btn-green:hover{
+    background-color: var(--green-2) !important;
 }
   
-.btn-green:active{
-    background-color: var(--tertiaryColor) !important;
+.lt-btn-green:active{
+    background-color: var(--green-3) !important;
 }
   
-.btn-red{
-    background-color: #dd3939 !important;
+.lt-btn-red{
+    background-color: var(--red-1) !important;
 }
   
-.btn-red:hover{
-    background-color: #d52424 !important;
+.lt-btn-red:hover{
+    background-color: var(--red-2) !important;
 }
   
-.btn-red:active{
-    background-color: #bf2020 !important;
+.lt-btn-red:active{
+    background-color: var(--red-3) !important;
 }
 
 .btn:disabled{

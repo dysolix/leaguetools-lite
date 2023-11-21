@@ -1,13 +1,17 @@
 import HasagiClient, { Hasagi, ChampSelectSession } from "@hasagi/extended";
 import { PropsWithChildren, createContext, useEffect, useState } from "react";
-import { Client, setClient } from "./hasagi-client";
+import { Client } from "./hasagi-client";
 import { type Page } from "./pages/index";
 import Configuration, { type ConfigType, loadConfig } from "./configuration";
 import { LeagueData, getData, loadData } from "./data";
 import { generateUltimateBraveryData } from "./modules/ultimate-bravery";
 import MainProcessIpc from "./main-process";
 import { setBasePath } from "./util";
-import axios from "axios"
+import os from "os"
+import { ColorTheme, getAllThemes } from "./manager/theme-manager";
+import { LoadoutPresetEntry, AutoLoadout, LoadoutPreset, AutoLoadoutEntry } from "./manager/loadout-manager";
+import { AutoRuneEntry, AutoRunes, RunePages, SavedRunePage } from "./manager/rune-manager";
+import path from "path";
 
 // App context
 export const DefaultAppContext = {
@@ -15,15 +19,28 @@ export const DefaultAppContext = {
     basePath: null! as string,
     config: null! as ConfigType,
     data: null! as LeagueData,
-    ultimateBraveryData: null! as ReturnType<typeof generateUltimateBraveryData>,
-    setUltimateBraveryData: null! as (data: ReturnType<typeof generateUltimateBraveryData>) => void
+    themes: null! as ColorTheme[],
 }
+
+// Module context
+export const DefaultModuleContext = {
+    ultimateBraveryData: null! as ReturnType<typeof generateUltimateBraveryData>,
+    setUltimateBraveryData: null! as (data: ReturnType<typeof generateUltimateBraveryData>) => void,
+
+    loadoutPresets: null! as Array<LoadoutPresetEntry>,
+    autoLoadouts: null! as Array<AutoLoadoutEntry>,
+    
+    savedRunePages: null! as Array<SavedRunePage>,
+    autoRuneEntries: null! as Array<AutoRuneEntry>,
+}
+
+export const ModuleContext = createContext(DefaultModuleContext);
 
 export const AppContext = createContext(DefaultAppContext);
 
 // Navigation context
 export const DefaultNavigationContext = {
-    page: "UltimateBravery" as Page,
+    page: "Runes" as Page,
     setPage: null! as (page: Page) => void
 }
 
@@ -54,21 +71,43 @@ export const LoLContext = createContext(DefaultLoLContext);
 export function ContextProviders(props: PropsWithChildren) {
     const [appContext, setAppContext] = useState(DefaultAppContext);
     useEffect(() => {
-        setAppContext(ctx => ({ ...ctx, setUltimateBraveryData: (data) => setAppContext(c => ({ ...c, ultimateBraveryData: data })) }))
-        Configuration.setUpdateCallback(config => setAppContext(ctx => ({ ...ctx, config })));
-        MainProcessIpc.getBasePath().then((basePath) => {
-            window.basePath = basePath;
-            setBasePath(basePath);
-            setAppContext(ctx => ({ ...ctx, basePath }))
-            loadConfig().then(() => setAppContext(ctx => ({ ...ctx, config: Configuration.getFullConfig() })))
-            loadData().then(() => setAppContext(ctx => ({ ...ctx, data: getData() })))
-        })
-    }, []);
+        if (appContext.themes === null) {
+            getAllThemes().then(themes => setAppContext(ctx => ({ ...ctx, themes })))
+            Configuration.setUpdateCallback(config => setAppContext(ctx => ({ ...ctx, config })));
+            MainProcessIpc.getBasePath().then((basePath) => {
+                window.basePath = basePath;
+                setBasePath(basePath);
+                setAppContext(ctx => ({ ...ctx, basePath }))
+                loadConfig().then(() => setAppContext(ctx => ({ ...ctx, config: Configuration.getFullConfig() })))
+                loadData().then(() => setAppContext(ctx => ({ ...ctx, data: getData() })))
+            })
+        }
+    }, [appContext.themes]);
+
+    const [moduleContext, setModuleContext] = useState(DefaultModuleContext);
+    useEffect(() => {
+        if (moduleContext.autoLoadouts === null || moduleContext.loadoutPresets === null || moduleContext.setUltimateBraveryData === null) {
+            setModuleContext(ctx => ({
+                ...ctx,
+                setUltimateBraveryData: (data) => setModuleContext(c => ({ ...c, ultimateBraveryData: data })),
+                autoLoadouts: AutoLoadout.getAll(),
+                loadoutPresets: LoadoutPreset.getAll(),
+                autoRuneEntries: AutoRunes.getAll(),
+                savedRunePages: RunePages.getAll()
+            }));
+
+            RunePages.onupdate = savedRunePages => setModuleContext(ctx => ({ ...ctx, savedRunePages }));
+            AutoRunes.onupdate = autoRuneEntries => setModuleContext(ctx => ({ ...ctx, autoRuneEntries }));
+
+            AutoLoadout.onupdate = autoLoadouts => setModuleContext(ctx => ({ ...ctx, autoLoadouts }));
+            LoadoutPreset.onupdate = loadoutPresets => setModuleContext(ctx => ({ ...ctx, loadoutPresets }));
+        }
+    }, [moduleContext.autoLoadouts, moduleContext.loadoutPresets, moduleContext.setUltimateBraveryData]);
 
     useEffect(() => {
-        if(appContext.basePath !== null && appContext.config !== null && appContext.data !== null)
+        if (appContext.basePath !== null && appContext.config !== null && appContext.data !== null && appContext.themes !== null)
             setAppContext(ctx => ({ ...ctx, ready: true }))
-    }, [appContext.basePath, appContext.config, appContext.data])
+    }, [appContext.basePath, appContext.config, appContext.data, appContext.themes])
 
     const [navigationContext, setNavigationContext] = useState(DefaultNavigationContext);
     useEffect(() => {
@@ -78,15 +117,7 @@ export function ContextProviders(props: PropsWithChildren) {
 
     const [lolContext, setLoLContext] = useState(DefaultLoLContext);
     useEffect(() => {
-        setClient(new HasagiClient());
-
-        Client.on("connecting", () => console.log("connecting..."));
-        Client.on("connected", () => console.log("connected"));
-        Client.on("connection-attempt-failed", () => console.log("connection failed..."));
-        Client.on("disconnected", () => console.log("disconnected..."))
-
         Client.on("connection-state-change", (isConnected) => setLoLContext(ctx => ({ ...ctx, isConnected })));
-        Client.on("disconnected", () => Client.connect());
         Client.on("rune-pages-update", (runePages) => setLoLContext(ctx => ({ ...ctx, runePages: runePages.filter(r => r.isEditable) })));
 
         Client.on("lobby-update", lobby => {
@@ -117,10 +148,22 @@ export function ContextProviders(props: PropsWithChildren) {
         Client.on("end-of-game-data-received", endOfGameStats => {
             setLoLContext(ctx => ({ ...ctx, endOfGameStats }));
         });
-
-        axios.defaults.adapter = ["http", "xhr"]
-        Client.connect()
     }, []);
+
+    useEffect(() => {
+        if(!appContext.config || appContext.ready)
+            return;
+
+        const lockfilePath = appContext.config.lockfilePath ?? process.env["LEAGUE_TOOLS_LOCKFILE_PATH"] ?? null;
+        if(lockfilePath && path.isAbsolute(lockfilePath)) {
+            console.log("lockfile");
+            Client.connect({ authenticationStrategy: "lockfile", lockfile: lockfilePath });
+            Client.on("disconnected", () => Client.connect({ authenticationStrategy: "lockfile", lockfile: lockfilePath }));
+        } else {
+            Client.connect();
+            Client.on("disconnected", () => Client.connect());
+        }
+    }, [appContext.ready, appContext.config])
 
     useEffect(() => {
         if (lolContext.gameflowPhase === "None" && lolContext.state !== "None") {
@@ -201,7 +244,9 @@ export function ContextProviders(props: PropsWithChildren) {
         <AppContext.Provider value={appContext}>
             <NavigationContext.Provider value={navigationContext}>
                 <LoLContext.Provider value={lolContext}>
-                    {props.children}
+                    <ModuleContext.Provider value={moduleContext}>
+                        {props.children}
+                    </ModuleContext.Provider>
                 </LoLContext.Provider>
             </NavigationContext.Provider>
         </AppContext.Provider>

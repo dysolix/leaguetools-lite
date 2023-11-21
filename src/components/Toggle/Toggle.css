@@ -4,10 +4,24 @@
 }
 
 .form-check > label{
-    color: var(--textColor);
+    color: var(--text-color);
+}
+
+.form-check-input {
+    background-image: var(--toggle-circle-url) !important;
 }
 
 .form-check-input:checked {
-    background-color: var(--checkedToggleColor);
-    border-color: var(--checkedToggleColor);
+    background-color: var(--checked-toggle-color);
+    border-color: var(--checked-toggle-color);
+    background-image: var(--toggle-circle-checked-url) !important;
+}
+
+.form-check-input:focus:not(:checked) {
+    background-image: var(--toggle-circle-url) !important;
+}
+
+.form-check-input:focus {
+    border-color: transparent !important;
+    box-shadow: none !important;
 }

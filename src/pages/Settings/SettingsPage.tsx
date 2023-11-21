@@ -1,9 +1,10 @@
 import { useContext } from "react";
-import { Toggle, Section, DropdownList } from "../../components";
+import { Toggle, Section, DropdownList, TextInput } from "../../components";
 import Configuration from "../../configuration";
 import { AppContext } from "../../context";
 import { ipcRenderer } from "electron";
 import MainProcessIpc from "../../main-process";
+import path from "path";
 
 export default function SettingsPage() {
     const appContext = useContext(AppContext);
@@ -25,11 +26,18 @@ export default function SettingsPage() {
             </Section>
             <Section>
                 <DropdownList label="Theme" value={appContext.config.theme} onChange={ev => Configuration.set("theme", ev.target.value)}>
-                    <option key="dark/green" value="dark/green">Dark/Green</option>
-                    <option key="dark/blue" value="dark/blue">Dark/Blue</option>
-                    <option key="dark/purple" value="dark/purple">Dark/Purple</option>
-                    <option key="light/blue" value="light/blue">WTF MAN?</option>
+                    {appContext.themes.map(theme => <option key={theme.name} value={theme.name}>{theme.name}</option>)}
                 </DropdownList>
+            </Section>
+            <Section>
+                <Toggle label="Use lockfile" tooltip="Requires a restart to show effect" state={appContext.config.lockfilePath !== null} setState={state => {
+                    if(state) {
+                        Configuration.set("lockfilePath", "");
+                    } else {
+                        Configuration.set("lockfilePath", null);
+                    }
+                }}/>
+                {appContext.config.lockfilePath !== null ? <TextInput placeholder="Absolute path to lockfile" value={appContext.config.lockfilePath} valid={path.isAbsolute(appContext.config.lockfilePath)} onChange={ev => Configuration.set("lockfilePath", ev.target.value)} /> : null}
             </Section>
             <Section>
                 <Toggle label="Enable developer mode" tooltip="Requires a restart to show effect." state={appContext.config.developerMode} setState={newState => {

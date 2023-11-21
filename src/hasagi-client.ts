@@ -1,9 +1,9 @@
 import HasagiClient from "@hasagi/extended";
-export var Client: HasagiClient;
-export function setClient(client: HasagiClient) {
-    Client = client;
-    window.hasagiClient = client;
-}
+import registerModules from "./modules/register-modules";
+export const Client = new HasagiClient();
+window.hasagiClient = Client;
+
+await registerModules();
 
 declare global {
     interface Window {

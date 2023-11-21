@@ -66,10 +66,21 @@ function setAutoStart(value) {
     })
 }
 
+const singleInstanceLock = app.requestSingleInstanceLock()
+
+if (!singleInstanceLock) {
+    app.quit()
+} else {
+    app.on('second-instance', (event, commandLine, workingDirectory) => {
+        showAndFocusWindow();
+    })
+}
+
 var tray = null;
 var win = null;
 var contextMenu = null;
 var closeToTray = true;
+var forceQuit = false;
 
 app.on("ready", async () => {
     win = await createWindow();
@@ -87,15 +98,28 @@ app.on("ready", async () => {
     })
 
     win.setTitle("LeagueTools");
+
+    win.on("close", (e) => {
+        if (closeToTray && !forceQuit) {
+            win.hide();
+            e.preventDefault();
+        } 
+    })
 });
 
-console.log(app.getVersion())
-
-ipcMain.handle("getVersion", () => (app.getVersion() + (app.isPackaged ? "" : "-dev")))
+ipcMain.handle("getVersion", () => (app.getVersion() + (app.isPackaged ? "-beta" : "-dev")))
 ipcMain.handle("getBasePath", () => baseDirPath);
 ipcMain.handle("showNotification", (ev, title, body) => new Notification({ title, body, icon: iconPath }).show())
-ipcMain.handle("exit", (ev, force) => closeToTray && !force ? BrowserWindow.getAllWindows()[0]?.hide() : app.quit());
+ipcMain.handle("exit", (ev, force) => {
+    forceQuit = force;
+    app.quit();
+});
 ipcMain.handle("minimize", () => BrowserWindow.getFocusedWindow()?.minimize());
 ipcMain.handle("setAutoStart", (ev, autoStart) => setAutoStart(autoStart));
 ipcMain.handle("setCloseToTray", (ev, state) => closeToTray = state);
-ipcMain.handle("restart", () => { if(!app.isPackaged) return; app.relaunch(); app.exit(0); })
+ipcMain.handle("restart", () => { 
+    if(!app.isPackaged) return; 
+    forceQuit = true;
+    app.relaunch(); 
+    app.exit(0); 
+})
