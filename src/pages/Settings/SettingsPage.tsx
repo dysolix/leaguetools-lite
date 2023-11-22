@@ -1,10 +1,11 @@
 import { useContext } from "react";
-import { Toggle, Section, DropdownList, TextInput } from "../../components";
+import { Toggle, Section, DropdownList, TextInput, Button } from "../../components";
 import Configuration from "../../configuration";
 import { AppContext } from "../../context";
 import { ipcRenderer } from "electron";
 import MainProcessIpc from "../../main-process";
 import path from "path";
+import { checkForUpdates } from "../../updater";
 
 export default function SettingsPage() {
     const appContext = useContext(AppContext);
@@ -41,6 +42,7 @@ export default function SettingsPage() {
             </Section>
             <Section>
                 <Toggle label="Enable auto updater" tooltip="Only activate this if you trust the auto update source below. Use at own risk." state={appContext.config.enableAutoUpdater} setState={state => Configuration.set("enableAutoUpdater", state)}/>
+                <Button label="Check for updates" color="primary" onClick={() => checkForUpdates()}/>
                 <TextInput placeholder="username/repo" title="Do not change this if you don't know what you're doing" value={appContext.config.autoUpdaterGitHubRepo} valid={appContext.config.autoUpdaterGitHubRepo.split("/").length === 2} onChange={ev => {
                     Configuration.set("autoUpdaterGitHubRepo", ev.target.value);
                 }}/>

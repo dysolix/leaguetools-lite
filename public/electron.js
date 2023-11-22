@@ -12,6 +12,9 @@ const baseDirPath = app.isPackaged ? app.getPath("userData") : path.join(__dirna
 const updateDirectory = path.join(baseDirPath, "./update_cache");
 const configFilePath = path.join(baseDirPath, "./config.json");
 
+await fs.rm(updateDirectory, { recursive: true, force: true }).catch(() => { });
+await fs.mkdir(updateDirectory).catch(() => { });
+
 /** @type {Partial<import("../src/configuration.ts").ConfigType>} */
 const config = await fs.readFile(configFilePath, { encoding: "utf-8" }).then(JSON.parse).catch(() => ({ }));
 config.startInSystemTray = config.startInSystemTray ?? false;

@@ -12,7 +12,7 @@ import { ColorTheme, getAllThemes } from "./manager/theme-manager";
 import { LoadoutPresetEntry, AutoLoadout, LoadoutPreset, AutoLoadoutEntry } from "./manager/loadout-manager";
 import { AutoRuneEntry, AutoRunes, RunePages, SavedRunePage } from "./manager/rune-manager";
 import path from "path";
-import { checkForUpdates } from "./updater";
+import { checkForUpdates, setUpdateAvailableCallback } from "./updater";
 
 // App context
 export const DefaultAppContext = {
@@ -80,22 +80,17 @@ export function ContextProviders(props: PropsWithChildren) {
                 window.basePath = basePath;
                 setBasePath(basePath);
                 setAppContext(ctx => ({ ...ctx, basePath }))
+                setUpdateAvailableCallback(info => setAppContext(ctx => ({ ...ctx, updateInfo: info })));
                 loadConfig().then(() => setAppContext(ctx => ({ ...ctx, config: Configuration.getFullConfig() }))).then(async () => {
                     while (true) {
                         console.debug("Checking for updates...")
-                        if (!Configuration.get("enableAutoUpdater")){
+                        if (!Configuration.get("enableAutoUpdater")) {
                             await delay(60000);
                             continue;
                         }
-    
-                        const updateInfo = await checkForUpdates();
-                        if (!updateInfo){
-                            await delay(60000);
-                            continue;
-                        }
-    
-                        setAppContext(ctx => ({ ...ctx, updateInfo }));
-                        break;
+
+                        await checkForUpdates();
+                        await delay(60000);
                     }
                 })
                 loadData().then(() => setAppContext(ctx => ({ ...ctx, data: getData() })))
