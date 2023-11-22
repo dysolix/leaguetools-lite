@@ -15,6 +15,8 @@ const configFilePath = path.join(baseDirPath, "./config.json");
 /** @type {Partial<import("../src/configuration.ts").ConfigType>} */
 const config = await fs.readFile(configFilePath, { encoding: "utf-8" }).then(JSON.parse).catch(() => ({ }));
 config.startInSystemTray = config.startInSystemTray ?? false;
+config.minimizeToSystemTray = config.minimizeToSystemTray ?? false;
+config.launchOnSystemStartup = config.launchOnSystemStartup ?? false;
 config.developerMode = config.developerMode ?? false;
 
 async function createWindow() {
@@ -31,7 +33,6 @@ async function createWindow() {
         frame: false,
         icon: iconPath,
         show: config.startInSystemTray !== undefined ? !config.startInSystemTray : false,
-        
     });
 
     try {
@@ -82,7 +83,7 @@ if (!singleInstanceLock) {
 var tray = null;
 var win = null;
 var contextMenu = null;
-var closeToTray = true;
+var closeToTray = config.minimizeToSystemTray;
 var forceQuit = false;
 
 app.on("ready", async () => {
@@ -91,7 +92,7 @@ app.on("ready", async () => {
     tray.setTitle("LeagueTools");
     tray.setToolTip("LeagueTools");
     contextMenu = Menu.buildFromTemplate([
-        { label: "Close", click: () => app.quit() }
+        { label: "Close", click: () => { forceQuit = true; app.quit(); } }
     ]);
 
     tray.setContextMenu(contextMenu);

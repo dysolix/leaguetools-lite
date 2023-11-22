@@ -41,7 +41,7 @@ export default function Runes(){
         <div>
             <Section>
                 <DropdownList label="Rune page" disabled={leagueContext.runePages === null || !leagueContext.isConnected} value={pageState.selectedRunePage} onChange={ev => setPageState(pageState => { return { ...pageState, selectedRunePage: Number(ev.target.value)} })}>
-                    {leagueContext.runePages !== null && leagueContext.runePages.length > 0 ? leagueContext.runePages.map(runePage => <option key={runePage.id} value={runePage.id}>{runePage.name}</option>) : <option key={-1} value={-1}>{leagueContext.isConnected ? "Loading..." : "Waiting for client..."}</option>}
+                    {leagueContext.runePages !== null && leagueContext.runePages.length > 0 ? leagueContext.runePages.toSorted((s1, s2) => s1.name.localeCompare(s2.name)).map(runePage => <option key={runePage.id} value={runePage.id}>{runePage.name}</option>) : <option key={-1} value={-1}>{leagueContext.isConnected ? "Loading..." : "Waiting for client..."}</option>}
                 </DropdownList>
                 <TextInputWithButton
                     textInput={
@@ -97,7 +97,7 @@ export default function Runes(){
             </Section>
             <Section>
                 <DropdownList label="Saved rune pages" value={pageState.selectedSavedRunePage} onChange={ev => setPageState({ ...pageState, selectedSavedRunePage: ev.target.value })} disabled={moduleContext.savedRunePages.length === 0}>
-                    {moduleContext.savedRunePages.length !== 0 ? moduleContext.savedRunePages.map(r => <option key={r.name} value={r.name}>{r.name}</option>) : <option value={""}>None</option>}
+                    {moduleContext.savedRunePages.length !== 0 ? moduleContext.savedRunePages.toSorted((s1, s2) => s1.name.localeCompare(s2.name)).map(r => <option key={r.name} value={r.name}>{r.name}</option>) : <option value={""}>None</option>}
                 </DropdownList>
                 <TextInputWithButton
                     textInput={{

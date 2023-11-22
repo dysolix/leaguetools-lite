@@ -4,11 +4,9 @@ import { Client } from './hasagi-client';
 import { getData, loadData } from './data';
 import Configuration, { loadConfig } from './configuration';
 import { Hasagi } from '@hasagi/extended';
-import MainProcessIpc from './main-process';
 import { Section } from './components';
 import { useContext, useEffect } from 'react';
 import { AppContext, NavigationContext } from './context';
-import fs from "fs/promises";
 
 let basePath: string;
 

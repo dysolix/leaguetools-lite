@@ -115,14 +115,6 @@ const loadoutPresets: LoadoutPresetEntry[] = await fs.readFile(loadoutPresetsFil
 export const LoadoutPreset = {
     onupdate: null as ((loadoutPresets: LoadoutPresetEntry[]) => void) | null,
 
-    add(preset: LoadoutPresetEntry) {
-        if (loadoutPresets.find(l => l.name === preset.name))
-            throw new Error(`Loadout with name ${preset.name} already exists.`);
-
-        loadoutPresets.push(preset);
-        this.saveToFile();
-        this.onupdate?.(loadoutPresets);
-    },
     get(name: string) {
         return loadoutPresets.find(l => l.name === name) ?? null;
     },
@@ -130,42 +122,48 @@ export const LoadoutPreset = {
     exists(name: string) {
         return loadoutPresets.some(l => l.name === name);
     },
-    update(target: LoadoutPresetEntry | string, preset: Partial<LoadoutPresetEntry>) {
-        if (typeof target === "string") {
-            const _target = this.get(target);
-            if (_target === null)
-                throw new Error(`Tried updating loadout that does not exist. (${target})`);
-            target = _target;
+    set(key: string, preset: LoadoutPresetEntry | null) {
+        if (this.exists(key)) {
+            if (preset !== null) {
+                console.debug(`Updating loadout preset ${key}...`)
+                const target = this.get(key)!;
+                target.name = preset.name;
+                target.profileIconId = preset.profileIconId;
+                target.border = preset.border;
+                target.displayedChallengeIds = preset.displayedChallengeIds;
+                target.titleId = preset.titleId;
+                target.banner = preset.banner;
+                target.tacticianId = preset.tacticianId;
+                target.tftBoomId = preset.tftBoomId;
+                target.tftArenaId = preset.tftArenaId;
+                target.tftLegendId = preset.tftLegendId;
+                target.ward = preset.ward;
+                target.emotes = preset.emotes;
+                target.clash = preset.clash;
+                this.onupdate?.(loadoutPresets);
+                return this.saveToFile();
+            } else {
+                console.debug(`Deleting loadout preset ${key}...`)
+                loadoutPresets.splice(loadoutPresets.indexOf(this.get(key)!), 1);
+                this.onupdate?.(loadoutPresets);
+                return this.saveToFile();
+            }
+        } else if (preset !== null) {
+            console.debug(`Creating loadout preset ${key}...`)
+            preset.name = key;
+            loadoutPresets.push(preset);
+            this.onupdate?.(loadoutPresets);
+            return this.saveToFile();
         }
 
-        if (!target)
-            throw new Error(`Tried updating loadout that does not exist. (${target})`);
-
-        Object.assign(target, preset);
-        this.saveToFile();
-        this.onupdate?.(loadoutPresets);
-    },
-    delete(preset: LoadoutPresetEntry | string) {
-        if (typeof preset === "string") {
-            const _loadout = this.get(preset);
-            if (_loadout === null)
-                throw new Error(`Tried deleting loadout that does not exist. (${preset})`);
-            preset = _loadout;
-        }
-
-        if (!preset)
-            throw new Error(`Tried deleting loadout that does not exist. (${preset})`);
-
-        loadoutPresets.splice(loadoutPresets.indexOf(preset), 1);
-        this.saveToFile();
-        this.onupdate?.(loadoutPresets);
+        return Promise.resolve();
     },
 
     async loadFromFile() {
         const presets = await fs.readFile(loadoutPresetsFile, "utf8").then(c => JSON.parse(c), err => []).then(l => Array.isArray(l) ? l : []);
         loadoutPresets.splice(0, loadoutPresets.length, ...presets);
     },
-    saveToFile() { return fs.writeFile(loadoutPresetsFile, JSON.stringify(loadoutPresets)) },
+    saveToFile() { return fs.writeFile(loadoutPresetsFile, JSON.stringify(loadoutPresets, null, 2)) },
 
     async loadPreset(loadoutPreset: string | LoadoutPresetEntry) {
         if (typeof loadoutPreset === "string") {
@@ -175,6 +173,8 @@ export const LoadoutPreset = {
 
             loadoutPreset = savedLoadout;
         }
+
+        console.debug(`Loading loadout preset ${loadoutPreset.name}...`)
 
         const l: Record<string, LCUTypes.LolLoadoutsItemKey> = {};
         if(loadoutPreset.ward)
@@ -226,14 +226,6 @@ export const AutoLoadout = {
     reservedNames: RESERVED_AUTO_LOADOUT_NAMES,
 
     onupdate: null as ((autoLoadouts: AutoLoadoutEntry[]) => void) | null,
-    add(key: AutoLoadoutKey, value: string) {
-        if (autoLoadouts.find(l => l.key === key))
-            throw new Error(`Auto loadout with key ${key} already exists.`);
-
-        autoLoadouts.push({ key, value });
-        this.saveToFile();
-        this.onupdate?.(autoLoadouts);
-    },
     get(key: AutoLoadoutKey) {
         return autoLoadouts.find(l => l.key === key) ?? null;
     },
@@ -241,42 +233,30 @@ export const AutoLoadout = {
     exists(key: AutoLoadoutKey) {
         return autoLoadouts.some(l => l.key === key);
     },
-    update(target: AutoLoadoutEntry | AutoLoadoutKey, value: string | null) {
-        const name = typeof target === "string" ? target : target.key;
-        if(this.exists(name)) {
-            if(value !== null) {
-                const _target = this.get(name)!;
-                _target.value = value;
-                this.saveToFile();
+    set(key: AutoLoadoutKey, value: string | null) {
+        if (this.exists(key)) {
+            if (value !== null) {
+                console.debug(`Updating auto loadout ${key}...`)
+                const _loadout = this.get(key)!;
+                _loadout.value = value;
                 this.onupdate?.(autoLoadouts);
+                return this.saveToFile();
             } else {
-                this.delete(name);
-            }
-        } else {
-            if(value !== null) {
-                this.add(name, value);
-            } 
+                console.debug(`Deleting auto loadout ${key}...`)
+                autoLoadouts.splice(autoLoadouts.indexOf(this.get(key)!), 1);
+                this.onupdate?.(autoLoadouts);
+                return this.saveToFile();
+            }   
+        } else if (value !== null) {
+            console.debug(`Creating auto loadout ${key}...`)
+            autoLoadouts.push({ key, value });
+            this.onupdate?.(autoLoadouts);
+            return this.saveToFile();
         }
     },
-    delete(target: AutoLoadoutEntry | AutoLoadoutKey) {
-        if (typeof target === "string") {
-            const _target = this.get(target);
-            if (_target === null)
-                throw new Error(`Tried deleting auto loadout that does not exist. (${target})`);
-            target = _target;
-        }
-
-        if (!target)
-            throw new Error(`Tried deleting auto loadout that does not exist. (${target})`);
-
-        autoLoadouts.splice(autoLoadouts.indexOf(target), 1);
-        this.saveToFile();
-        this.onupdate?.(autoLoadouts);
-    },
-
     async loadFromFile() {
         const presets = await fs.readFile(autoLoadoutFile, "utf8").then(c => JSON.parse(c), err => []).then(l => Array.isArray(l) ? l : []);
         autoLoadouts.splice(0, autoLoadouts.length, ...presets);
     },
-    saveToFile() { return fs.writeFile(autoLoadoutFile, JSON.stringify(autoLoadouts)) }
+    saveToFile() { return fs.writeFile(autoLoadoutFile, JSON.stringify(autoLoadouts, null, 2)) }
 };

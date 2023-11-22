@@ -42,15 +42,15 @@ export default function AutoLoadoutPage() {
             </Section>
             <Section>
                 <DropdownList label="Champion" disabled={appContext.data?.champions === undefined} value={pageState.selectedChampionKey} onChange={ev => setPageState(pageState => { return { ...pageState, selectedChampionKey: ev.target.value } })} >
-                    {appContext.data?.champions !== undefined ? appContext.data.champions.values().map(c => <option key={c.key} value={c.key}>{c.name}</option>) : <option value={""}>Loading...</option>}
+                    {appContext.data?.champions !== undefined ? appContext.data.champions.values().toSorted((c1, c2) => c1.name.localeCompare(c2.name)).map(c => <option key={c.key} value={c.key}>{c.name}</option>) : <option value={""}>Loading...</option>}
                 </DropdownList>
                 <DropdownList label="Loadout preset" disabled={moduleContext.loadoutPresets  === null} value={pageState.selectedSavedLoadout} onChange={ev => {
                     setPageState(pageState => { return { ...pageState, selectedSavedLoadout: ev.target.value } });
-                    AutoLoadout.update(pageState.selectedChampionKey, ev.target.value === "" ? null : ev.target.value );
+                    AutoLoadout.set(pageState.selectedChampionKey, ev.target.value === "" ? null : ev.target.value );
                 }} >
                     <option value={""}>{moduleContext.loadoutPresets === null ? "Loading..." : "None"}</option>
                     {moduleContext.loadoutPresets !== null && moduleContext.loadoutPresets.length !== 0 ?
-                        moduleContext.loadoutPresets.map(loadout => <option key={loadout.name} value={loadout.name}>{loadout.name}</option>) :
+                        moduleContext.loadoutPresets.toSorted((s1, s2) => s1.name.localeCompare(s2.name)).map(loadout => <option key={loadout.name} value={loadout.name}>{loadout.name}</option>) :
                         null
                     }
                 </DropdownList>
@@ -58,21 +58,21 @@ export default function AutoLoadoutPage() {
             <Section>
                 <DropdownList label="Default loadout preset" disabled={moduleContext.loadoutPresets === null} value={pageState.selectedDefaultSavedLoadout} onChange={ev => {
                     setPageState(pageState => { return { ...pageState, selectedDefaultSavedLoadout: ev.target.value } });
-                    AutoLoadout.update("default", ev.target.value === "" ? null : ev.target.value);
+                    AutoLoadout.set("default", ev.target.value === "" ? null : ev.target.value);
                 }} >
                     <option value={""}>{moduleContext.loadoutPresets === null ? "Loading..." : "None"}</option>
                     {moduleContext.loadoutPresets !== null && moduleContext.loadoutPresets.length !== 0 ?
-                        moduleContext.loadoutPresets.map(loadout => <option key={loadout.name} value={loadout.name}>{loadout.name}</option>) :
+                        moduleContext.loadoutPresets.toSorted((s1, s2) => s1.name.localeCompare(s2.name)).map(loadout => <option key={loadout.name} value={loadout.name}>{loadout.name}</option>) :
                         null
                     }
                 </DropdownList>
                 <DropdownList label="Default ARAM tactician" disabled={moduleContext.loadoutPresets === null} value={pageState.selectedAramLittleLegendLoadout} onChange={ev => {
                     setPageState(pageState => { return { ...pageState, selectedAramLittleLegendLoadout: ev.target.value } });
-                    AutoLoadout.update("aram_little_legend", ev.target.value === "" ? null : ev.target.value);
+                    AutoLoadout.set("aram_little_legend", ev.target.value === "" ? null : ev.target.value);
                 }} >
                     <option value={""}>{moduleContext.loadoutPresets === null ? "Loading..." : "None"}</option>
                     {moduleContext.loadoutPresets !== null && moduleContext.loadoutPresets.length !== 0 ?
-                        moduleContext.loadoutPresets.map(loadout => <option key={loadout.name} value={loadout.name}>{loadout.name}</option>) :
+                        moduleContext.loadoutPresets.toSorted((s1, s2) => s1.name.localeCompare(s2.name)).map(loadout => <option key={loadout.name} value={loadout.name}>{loadout.name}</option>) :
                         null
                     }
                 </DropdownList>

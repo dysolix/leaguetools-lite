@@ -33,7 +33,7 @@ export default function AutoRunesPage() {
             </Section>
             <Section>
                 <DropdownList label="Champion" value={pageState.selectedChampion} onChange={ev => setPageState({ ...pageState, selectedChampion: ev.target.value })}>
-                    {appContext.data !== null ? appContext.data.champions.values().map(c => <option key={c.id} value={c.id}>{c.name}</option>) : <option value={""}>Loading...</option>}
+                    {appContext.data !== null ? appContext.data.champions.values().toSorted((c1, c2) => c1.name.localeCompare(c2.name)).map(c => <option key={c.id} value={c.id}>{c.name}</option>) : <option value={""}>Loading...</option>}
                 </DropdownList>
 
                 <DropdownList label="Summoner's Rift Rune Page" value={pageState.selectedSrRunePage} disabled={pageState.selectedChampion === ""} onChange={ev => {
@@ -41,7 +41,7 @@ export default function AutoRunesPage() {
                     AutoRunes.set(pageState.selectedChampion, { key: pageState.selectedChampion, summonersRiftRunePage: ev.target.value === "" ? null : ev.target.value, howlingAbyssRunePage: pageState.selectedHaRunePage });
                 }}>
                     <option value="">None</option>
-                    {moduleContext.savedRunePages.map(srp => <option key={srp.name} value={srp.name}>{srp.name}</option>)}
+                    {moduleContext.savedRunePages.toSorted((s1, s2) => s1.name.localeCompare(s2.name)).map(srp => <option key={srp.name} value={srp.name}>{srp.name}</option>)}
                 </DropdownList>
 
                 <DropdownList label="Howling Abyss Rune Page" value={pageState.selectedHaRunePage} disabled={pageState.selectedChampion === ""} onChange={ev => {
@@ -49,7 +49,7 @@ export default function AutoRunesPage() {
                     AutoRunes.set(pageState.selectedChampion, { key: pageState.selectedChampion, summonersRiftRunePage: pageState.selectedSrRunePage, howlingAbyssRunePage: ev.target.value === "" ? null : ev.target.value });
                 }}>
                     <option value="">None</option>
-                    {moduleContext.savedRunePages.map(srp => <option key={srp.name} value={srp.name}>{srp.name}</option>)}
+                    {moduleContext.savedRunePages.toSorted((s1, s2) => s1.name.localeCompare(s2.name)).map(srp => <option key={srp.name} value={srp.name}>{srp.name}</option>)}
                 </DropdownList>
             </Section>
         </div>

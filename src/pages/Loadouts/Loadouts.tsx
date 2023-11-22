@@ -15,8 +15,10 @@ export default function Emotes() {
         includeTFTMap: false,
         includeTFTBoom: false,
         includeLittleLegend: false,
-        createButtonDisabled: false,
-        selectedSavedLoadout: "" as string
+        selectedSavedLoadout: "" as string,
+
+        blockWriteActions: false,
+        blockLoading: false
     });
 
     useEffect(() => {
@@ -50,8 +52,8 @@ export default function Emotes() {
                 <Toggle label="Include TFT Boom" state={pageState.includeTFTBoom} setState={state => setPageState({ ...pageState, includeTFTBoom: state })} />
             </Section>
             <Section>
-                <Button disabled={pageState.createButtonDisabled} label="Create loadout preset" color="primary" onClick={async () => {
-                    if (pageState.createButtonDisabled)
+                <Button disabled={pageState.blockWriteActions} label="Create loadout preset" color="primary" onClick={async () => {
+                    if (pageState.blockWriteActions)
                         return;
 
                     const name = pageState.saveAsInputValue;
@@ -62,7 +64,7 @@ export default function Emotes() {
                     else if (LoadoutPreset.exists(name))
                         return;
 
-                    setPageState(pageState => { return { ...pageState, createButtonDisabled: true } })
+                    setPageState(pageState => { return { ...pageState, blockWriteActions: true } })
 
                     await Client.Inventory.getAccountLoadout().then(async currentLoadout => {
                         var loadoutPreset: LoadoutPresetEntry = {
@@ -102,29 +104,39 @@ export default function Emotes() {
                         if (pageState.includeProfileIcon)
                             loadoutPreset.profileIconId = await Client.getLocalSummoner().then(s => s.profileIconId);
 
-                        LoadoutPreset.add(loadoutPreset);
-                        setPageState(pageState => { return { ...pageState, saveAsInputValue: "", saveAsInputValid: true } })
+                        await LoadoutPreset.set(loadoutPreset.name, loadoutPreset);
                     })
 
-                    setPageState(pageState => { return { ...pageState, createButtonDisabled: false } })
+                    setPageState(pageState => { return { ...pageState, blockWriteActions: false, saveAsInputValue: "", saveAsInputValid: true } })
                 }} />
             </Section>
             <Section>
                 <DropdownList label="Loadout preset" disabled={moduleContext.loadoutPresets === null || moduleContext.loadoutPresets.length === 0} value={pageState.selectedSavedLoadout} onChange={ev => setPageState(pageState => { return { ...pageState, selectedSavedLoadout: ev.target.value } })}>
                     {moduleContext.loadoutPresets !== null && moduleContext.loadoutPresets.length !== 0 ?
-                        moduleContext.loadoutPresets.map(loadout => <option key={loadout.name} value={loadout.name}>{loadout.name}</option>)
+                        moduleContext.loadoutPresets.sort((s1, s2) => s1.name.localeCompare(s2.name)).map(loadout => <option key={loadout.name} value={loadout.name}>{loadout.name}</option>)
                         :
                         <option value={""}>{moduleContext.loadoutPresets === null ? "Loading..." : "None"}</option>}
                 </DropdownList>
-                <Button label="Load" wide color="primary" onClick={async () => {
+                <Button label="Load" disabled={pageState.selectedSavedLoadout === "" || pageState.blockLoading} wide color="primary" onClick={async () => {
+                    if(pageState.blockLoading)
+                        return;
+
                     const savedLoadout = LoadoutPreset.get(pageState.selectedSavedLoadout!);
                     if (!savedLoadout)
                         return;
 
+                    setPageState(pageState => { return { ...pageState, blockLoading: true } })
                     await LoadoutPreset.loadPreset(savedLoadout);
+                    setPageState(pageState => { return { ...pageState, blockLoading: false } })
                 }} />
-                <Button label="Replace" title="Replace the selected loadout preset" wide color="caution" onClick={async () => {
-                    setPageState(pageState => { return { ...pageState, createButtonDisabled: true } })
+                <Button label="Replace" disabled={pageState.selectedSavedLoadout === "" || pageState.blockWriteActions} title="Replace the selected loadout preset" wide color="caution" onClick={async () => {
+                    if(pageState.selectedSavedLoadout === "")
+                        return;
+
+                    if(pageState.blockWriteActions)
+                        return;
+
+                    setPageState(pageState => { return { ...pageState, blockWriteActions: true } })
 
                     await Client.Inventory.getAccountLoadout().then(async currentLoadout => {
                         const loadoutPreset = LoadoutPreset.get(pageState.selectedSavedLoadout!)!;
@@ -175,13 +187,21 @@ export default function Emotes() {
                         else
                             delete loadoutPreset.profileIconId;
 
-                        LoadoutPreset.update(loadoutPreset.name, loadoutPreset);
+                        LoadoutPreset.set(loadoutPreset.name, loadoutPreset);
                     })
 
-                    setPageState(pageState => { return { ...pageState, createButtonDisabled: false } })
+                    setPageState(pageState => { return { ...pageState, blockWriteActions: false } })
                 }} />
-                <Button label="Delete" wide color="caution" onClick={() => {
-                    LoadoutPreset.delete(pageState.selectedSavedLoadout!);
+                <Button label="Delete" disabled={pageState.selectedSavedLoadout === "" || pageState.blockWriteActions} wide color="caution" onClick={async () => {
+                    if(pageState.selectedSavedLoadout === "")
+                        return;
+
+                    if(pageState.blockWriteActions)
+                        return;
+
+                    setPageState(pageState => { return { ...pageState, blockWriteActions: true } })
+                    await LoadoutPreset.set(pageState.selectedSavedLoadout!, null);
+                    setPageState(pageState => { return { ...pageState, blockWriteActions: false } })
                 }} />
             </Section>
         </div>
