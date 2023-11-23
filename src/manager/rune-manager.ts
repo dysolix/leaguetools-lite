@@ -1,10 +1,6 @@
 import path from "path";
 import fs from "fs/promises";
 
-/*
-    Buttons get disabled when they can't be used; Added auto loadout/rune verification
-*/
-
 export type SavedRunePage = {
     name: string,
     primaryRuneTreeId: number,
