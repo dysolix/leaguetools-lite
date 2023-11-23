@@ -6,7 +6,7 @@
         "email": "contact@dysolix.dev",
         "url": "https://github.com/dysolix/leaguetools-lite"
     },
-    "version": "0.0.4",
+    "version": "0.0.5",
     "main": "public/electron.js",
     "private": true,
     "dependencies": {
