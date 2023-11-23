@@ -177,21 +177,21 @@ export const LoadoutPreset = {
         console.debug(`Loading loadout preset ${loadoutPreset.name}...`)
 
         const l: Record<string, LCUTypes.LolLoadoutsItemKey> = {};
-        if(loadoutPreset.ward)
+        if (loadoutPreset.ward)
             l.WARD_SKIN_SLOT = loadoutPreset.ward;
-        if(loadoutPreset.clash?.bannerId)
+        if (loadoutPreset.clash?.bannerId)
             l.BANNER_FLAG = {
                 contentId: "",
                 inventoryType: "TOURNAMENT_FLAG",
                 itemId: loadoutPreset.clash.bannerId
             }
-        if(loadoutPreset.clash?.trophyId)
+        if (loadoutPreset.clash?.trophyId)
             l.TOURNAMENT_TROPHY = {
                 contentId: "",
                 inventoryType: "TOURNAMENT_TROPHY",
                 itemId: loadoutPreset.clash.trophyId
             }
-        if(loadoutPreset.emotes)
+        if (loadoutPreset.emotes)
             Object.assign(l, loadoutPreset.emotes);
 
         await Client.Inventory.updateAccountLoadout(l);
@@ -221,7 +221,11 @@ export const LoadoutPreset = {
 export const RESERVED_AUTO_LOADOUT_NAMES = ["default", "aram_little_legend"] as const;
 export type AutoLoadoutKey = typeof RESERVED_AUTO_LOADOUT_NAMES[number] | string;
 export type AutoLoadoutEntry = { key: AutoLoadoutKey, value: string };
-const autoLoadouts: AutoLoadoutEntry[] = await fs.readFile(autoLoadoutFile, "utf8").then(c => JSON.parse(c), err => []).then(l => Array.isArray(l) ? l : []);
+const autoLoadouts: AutoLoadoutEntry[] = await fs.readFile(autoLoadoutFile, "utf8")
+    .then(c => JSON.parse(c), err => [])
+    .then(l => Array.isArray(l) ? l : [])
+    .then((loadouts: AutoLoadoutEntry[]) => loadouts.filter(l => LoadoutPreset.exists(l.value)));
+
 export const AutoLoadout = {
     reservedNames: RESERVED_AUTO_LOADOUT_NAMES,
 
@@ -234,6 +238,9 @@ export const AutoLoadout = {
         return autoLoadouts.some(l => l.key === key);
     },
     set(key: AutoLoadoutKey, value: string | null) {
+        if(value !== null && !LoadoutPreset.exists(value))
+            throw new Error(`Tried setting auto loadout to a non-existent preset. (${value})`);
+
         if (this.exists(key)) {
             if (value !== null) {
                 console.debug(`Updating auto loadout ${key}...`)
@@ -246,7 +253,7 @@ export const AutoLoadout = {
                 autoLoadouts.splice(autoLoadouts.indexOf(this.get(key)!), 1);
                 this.onupdate?.(autoLoadouts);
                 return this.saveToFile();
-            }   
+            }
         } else if (value !== null) {
             console.debug(`Creating auto loadout ${key}...`)
             autoLoadouts.push({ key, value });
@@ -255,7 +262,10 @@ export const AutoLoadout = {
         }
     },
     async loadFromFile() {
-        const presets = await fs.readFile(autoLoadoutFile, "utf8").then(c => JSON.parse(c), err => []).then(l => Array.isArray(l) ? l : []);
+        const presets = await fs.readFile(autoLoadoutFile, "utf8")
+            .then(c => JSON.parse(c), err => [])
+            .then(l => Array.isArray(l) ? l : [])
+            .then((loadouts: AutoLoadoutEntry[]) => loadouts.filter(l => LoadoutPreset.exists(l.value)));
         autoLoadouts.splice(0, autoLoadouts.length, ...presets);
     },
     saveToFile() { return fs.writeFile(autoLoadoutFile, JSON.stringify(autoLoadouts, null, 2)) }

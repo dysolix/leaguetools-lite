@@ -1,6 +1,10 @@
 import path from "path";
 import fs from "fs/promises";
 
+/*
+    Buttons get disabled when they can't be used; Added auto loadout/rune verification
+*/
+
 export type SavedRunePage = {
     name: string,
     primaryRuneTreeId: number,
@@ -21,7 +25,16 @@ const runePagesFile = path.join(runeDirectoryy, "./rune-pages.json");
 
 await fs.mkdir(runeDirectoryy).catch(() => { });
 const runePages: SavedRunePage[] = await fs.readFile(runePagesFile, "utf8").then(c => JSON.parse(c), err => []).then(l => Array.isArray(l) ? l : []);
-const autoRunes: AutoRuneEntry[] = await fs.readFile(autoRunesFile, "utf8").then(c => JSON.parse(c), err => []).then(l => Array.isArray(l) ? l : []);
+const autoRunes: AutoRuneEntry[] = await fs.readFile(autoRunesFile, "utf8")
+    .then(c => JSON.parse(c), err => [])
+    .then(l => Array.isArray(l) ? l : []);
+
+autoRunes.forEach(rune => {
+    if (rune.howlingAbyssRunePage !== null && !RunePages.exists(rune.howlingAbyssRunePage))
+        rune.howlingAbyssRunePage = null;
+    if (rune.summonersRiftRunePage !== null && !RunePages.exists(rune.summonersRiftRunePage))
+        rune.summonersRiftRunePage = null;
+});
 
 export const RunePages = {
     onupdate: null as ((runePages: SavedRunePage[]) => void) | null,
@@ -35,32 +48,27 @@ export const RunePages = {
     exists(name: string) {
         return this.get(name) !== null;
     },
-    upsert(page: SavedRunePage | { name: string }) {
-        if(this.exists(page.name)) {
-            const _page = this.get(page.name)!;
-            _page.name = page.name ?? _page.name;
-            if("primaryRuneTreeId" in page)
+    set(name: string, page: Partial<SavedRunePage> | null) {
+        if (this.exists(name)) {
+            if (page !== null) {
+                const _page = this.get(name)!;
+                _page.name = page.name ?? _page.name;
                 _page.primaryRuneTreeId = page.primaryRuneTreeId ?? _page.primaryRuneTreeId;
-            if("secondaryRuneTreeId" in page)
                 _page.secondaryRuneTreeId = page.secondaryRuneTreeId ?? _page.secondaryRuneTreeId;
-            if("runeIds" in page)
                 _page.runeIds = page.runeIds ?? _page.runeIds;
-        } else if("name" in page && "primaryRuneTreeId" in page && "secondaryRuneTreeId" in page && "runeIds" in page) {
-            runePages.push(page);
+            } else {
+                runePages.splice(runePages.indexOf(this.get(name)!), 1);
+            }
+
+            this.onupdate?.(runePages);
+            return this.save();
+        } else if (page !== null && page.name !== undefined && page.primaryRuneTreeId !== undefined && page.secondaryRuneTreeId !== undefined && page.runeIds !== undefined) {
+            runePages.push(page as SavedRunePage);
+            this.onupdate?.(runePages);
+            return this.save();
         }
 
-        this.save();
-        this.onupdate?.(runePages);
-    },
-    delete(name: string) {
-        const page = this.get(name);
-        if(!page)
-            throw new Error(`Tried deleting rune page that does not exist. (${name})`);
-
-        runePages.splice(runePages.indexOf(page), 1);
-
-        this.save();
-        this.onupdate?.(runePages);
+        return Promise.resolve();
     }
 }
 
@@ -77,34 +85,43 @@ export const AutoRunes = {
         return this.get(name) !== null;
     },
     set(key: string, value: AutoRuneEntry | null) {
-        if(this.exists(key)) {
-            if(value !== null) {
+        if (this.exists(key)) {
+            if (value !== null) {
+                if (value.summonersRiftRunePage !== null && !RunePages.exists(value.summonersRiftRunePage))
+                    value.summonersRiftRunePage = null;
+                if (value.howlingAbyssRunePage !== null && !RunePages.exists(value.howlingAbyssRunePage))
+                    value.howlingAbyssRunePage = null;
+
                 const _page = this.get(key)!;
                 _page.summonersRiftRunePage = value.summonersRiftRunePage ?? _page.summonersRiftRunePage;
                 _page.howlingAbyssRunePage = value.howlingAbyssRunePage ?? _page.howlingAbyssRunePage;
 
-                if(_page.summonersRiftRunePage === null && _page.howlingAbyssRunePage === null)
-                    this.delete(key);
+                if (_page.summonersRiftRunePage === null && _page.howlingAbyssRunePage === null)
+                    return this.delete(key);
+
+                this.onupdate?.(autoRunes);
+                return this.save();
             } else {
-                this.delete(key);
+                return this.delete(key);
             }
         } else {
-            if(value !== null) {
+            if (value !== null) {
                 autoRunes.push(value);
-            } 
+                this.onupdate?.(autoRunes);
+                return this.save();
+            }
         }
 
-        this.save();
-        this.onupdate?.(autoRunes);
+        return Promise.resolve();
     },
     delete(name: string) {
         const page = this.get(name);
-        if(!page)
+        if (!page)
             throw new Error(`Tried deleting auto rune that does not exist. (${name})`);
 
         autoRunes.splice(autoRunes.indexOf(page), 1);
 
-        this.save();
         this.onupdate?.(autoRunes);
+        return this.save();
     }
 }

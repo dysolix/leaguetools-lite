@@ -2,11 +2,12 @@ import { useContext, useState } from "react";
 import { Button, Section, Text, Toggle } from "../../components";
 import { generateUltimateBraveryData } from "../../modules/ultimate-bravery";
 import { getData } from "../../data";
-import { AppContext, ModuleContext } from "../../context";
+import { AppContext, LoLContext, ModuleContext } from "../../context";
 import { Client } from "../../hasagi-client";
 import { replaceLeagueToolsRunePage } from "../../util";
 
 export default function UltimateBravery() {
+    const lolContext = useContext(LoLContext);
     const moduleContext = useContext(ModuleContext);
     const [pageState, setPageState] = useState({
         forceMythic: true,
@@ -19,7 +20,7 @@ export default function UltimateBravery() {
         <div>
             <Section wide>
                 <Button color="primary" label="Generate" onClick={() => moduleContext.setUltimateBraveryData(generateUltimateBraveryData({ forceBoots: pageState.forceBoots, forceMythic: pageState.forceMythic, forceSupportItemIfSupport: pageState.forceSupportItem }))} />
-                <Button title="Loads the generated runes (if a target rune page is present), summoner spells (if in champ select) and items (soon™)" color="primary" disabled={moduleContext.ultimateBraveryData === null} label="Import" onClick={() => {
+                <Button title="Loads the generated runes (if a target rune page is present), summoner spells (if in champ select) and items (soon™)" color="primary" disabled={moduleContext.ultimateBraveryData === null || !lolContext.isConnected } label="Import" onClick={() => {
                     if (moduleContext.ultimateBraveryData === null)
                         return;
 

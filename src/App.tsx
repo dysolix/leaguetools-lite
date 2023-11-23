@@ -3,9 +3,6 @@ import { ContextProviders } from './context';
 import React from 'react';
 import { PageContent, SideBar, TitleBar } from './components';
 import { ThemeHandler } from './util';
-import find from "find-process"
-
-(window as any).findProcess = find;
 
 function App() {
   return (

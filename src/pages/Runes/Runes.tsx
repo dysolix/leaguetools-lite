@@ -19,8 +19,10 @@ export default function Runes(){
         renameInputValid: true,
         copyInputValue: "",
         copyInputValid: true,
-        loadButtonDisabled: false,
-        importPrefix: Configuration.get("runeImportPrefix")
+        importPrefix: Configuration.get("runeImportPrefix"),
+
+        blockWriteOperations: false,
+        blockLoadButton: false
     });
 
     useEffect(() => {
@@ -40,7 +42,7 @@ export default function Runes(){
     return (
         <div>
             <Section>
-                <DropdownList label="Rune page" disabled={leagueContext.runePages === null || !leagueContext.isConnected} value={pageState.selectedRunePage} onChange={ev => setPageState(pageState => { return { ...pageState, selectedRunePage: Number(ev.target.value)} })}>
+                <DropdownList label="Rune page" disabled={leagueContext.runePages === null || leagueContext.runePages.length === 0} value={pageState.selectedRunePage} onChange={ev => setPageState(pageState => { return { ...pageState, selectedRunePage: Number(ev.target.value)} })}>
                     {leagueContext.runePages !== null && leagueContext.runePages.length > 0 ? leagueContext.runePages.toSorted((s1, s2) => s1.name.localeCompare(s2.name)).map(runePage => <option key={runePage.id} value={runePage.id}>{runePage.name}</option>) : <option key={-1} value={-1}>{leagueContext.isConnected ? "Loading..." : "Waiting for client..."}</option>}
                 </DropdownList>
                 <TextInputWithButton
@@ -65,7 +67,7 @@ export default function Runes(){
                             label: "Save",
                             color: "primary",
                             disabled: pageState.selectedRunePage === -1 || leagueContext.runePages?.length === 0,
-                            onClick: ev => {
+                            onClick: async ev => {
                                 if (pageState.saveAsInputValue.length === 0 || pageState.saveAsInputValue.length > 32)
                                     return;
 
@@ -82,14 +84,16 @@ export default function Runes(){
                                 if (runePage.subStyleId === undefined)
                                     return;
 
-                                RunePages.upsert({
+                                setPageState({ ...pageState, blockWriteOperations: true  })
+
+                                await RunePages.set(pageState.saveAsInputValue, {
                                     name: pageState.saveAsInputValue,
                                     runeIds: runePage.selectedPerkIds,
                                     primaryRuneTreeId: runePage.primaryStyleId,
                                     secondaryRuneTreeId: runePage.subStyleId,
                                 })
 
-                                setPageState({ ...pageState, saveAsInputValue: "", saveAsInputValid: true })
+                                setPageState({ ...pageState, saveAsInputValue: "", saveAsInputValid: true, blockWriteOperations: false })
                             }
                         }
                     }
@@ -117,8 +121,11 @@ export default function Runes(){
                     button={{
                         label: "Rename",
                         color: "primary",
-                        disabled: pageState.selectedSavedRunePage === "",
-                        onClick: ev => {
+                        disabled: pageState.selectedSavedRunePage === "" || pageState.blockWriteOperations,
+                        onClick: async ev => {
+                            if(pageState.blockWriteOperations)
+                                return;
+
                             if (pageState.renameInputValue.length === 0 || pageState.renameInputValue.length > 32)
                                 return;
 
@@ -126,12 +133,14 @@ export default function Runes(){
                                 return;
 
                             let runePage = RunePages.get(pageState.selectedSavedRunePage);
-                            if (runePage === undefined)
+                            if (runePage === null)
                                 return;
 
-                            RunePages.upsert({ name: pageState.selectedSavedRunePage });
+                            setPageState({ ...pageState, blockWriteOperations: true })
 
-                            setPageState({ ...pageState, renameInputValue: "", renameInputValid: true })
+                            await RunePages.set(pageState.selectedSavedRunePage, { ...runePage, name: pageState.renameInputValue });
+
+                            setPageState({ ...pageState, renameInputValue: "", renameInputValid: true, blockWriteOperations: false })
                         }
                     }} />
 
@@ -153,8 +162,11 @@ export default function Runes(){
                     button={{
                         label: "Copy",
                         color: "primary",
-                        disabled: pageState.selectedSavedRunePage === "",
-                        onClick: ev => {
+                        disabled: pageState.selectedSavedRunePage === "" || pageState.blockWriteOperations,
+                        onClick: async ev => {
+                            if(pageState.blockWriteOperations)
+                                return;
+
                             if (pageState.copyInputValue.length === 0 || pageState.copyInputValue.length > 32)
                                 return;
 
@@ -162,35 +174,42 @@ export default function Runes(){
                                 return;
 
                             let runePage = RunePages.get(pageState.selectedSavedRunePage);
-                            if (runePage === undefined)
+                            if (runePage === null)
                                 return;
 
-                            RunePages.upsert({
-                                ...runePage!,
+                            setPageState({ ...pageState, blockWriteOperations: true })
+
+                            await RunePages.set(pageState.copyInputValue, {
+                                ...runePage,
                                 name: pageState.copyInputValue
                             })
 
-                            setPageState({ ...pageState, copyInputValue: "", copyInputValid: true })
+                            setPageState({ ...pageState, copyInputValue: "", copyInputValid: true, blockWriteOperations: false })
                         }
                     }} />
 
-                <Button label="Load" disabled={pageState.selectedSavedRunePage === "" || pageState.loadButtonDisabled || !leagueContext.isConnected} color="primary" wide onClick={async ev => {
-                    if (pageState.loadButtonDisabled) {
+                <Button label="Load" disabled={pageState.selectedSavedRunePage === "" || pageState.blockLoadButton || !leagueContext.isConnected} color="primary" wide onClick={async ev => {
+                    if (pageState.blockLoadButton) {
                         return;
                     }
 
                     let targetRunePage = leagueContext.runePages?.find(rp => rp.name.startsWith(Configuration.get("runeImportPrefix")));
                     if (targetRunePage === undefined) return;
                     if (pageState.selectedSavedRunePage === "") return;
-                    setPageState({ ...pageState, loadButtonDisabled: true });
+                    setPageState({ ...pageState, blockLoadButton: true });
                     let savedRunePage = RunePages.get(pageState.selectedSavedRunePage);
                     let newRunePage: Partial<Hasagi.RunePage> = { name: savedRunePage!.name, selectedPerkIds: savedRunePage!.runeIds, primaryStyleId: savedRunePage!.primaryRuneTreeId, subStyleId: savedRunePage!.secondaryRuneTreeId }
                     newRunePage.name = Configuration.get("runeImportPrefix").trim() + " " + newRunePage.name;
-                    Client.Runes.replaceRunePage(targetRunePage.id, newRunePage).then(() => setPageState({ ...pageState, loadButtonDisabled: false }));
+                    Client.Runes.replaceRunePage(targetRunePage.id, newRunePage).then(() => setPageState({ ...pageState, blockLoadButton: false }));
                 }} />
 
-                <Button label="Delete" disabled={pageState.selectedSavedRunePage === ""} color="caution" wide onClick={ev => {
-                    RunePages.delete(pageState.selectedSavedRunePage);
+                <Button label="Delete" disabled={pageState.selectedSavedRunePage === "" || pageState.blockWriteOperations} color="caution" wide onClick={async ev => {
+                    if(pageState.blockWriteOperations)
+                        return;
+                    
+                    setPageState({ ...pageState, blockWriteOperations: true });
+                    await RunePages.set(pageState.selectedSavedRunePage, null);
+                    setPageState({ ...pageState, blockWriteOperations: false });
                 }} />
                 <TextInput style={{ textAlign: "center" }} value={pageState.importPrefix} placeholder="Import page prefix" valid={pageState.importPrefix.length > 2 && pageState.importPrefix.length <= 12} onChange={ev => {
                     setPageState({ ...pageState, importPrefix: ev.target.value });

@@ -29,6 +29,8 @@ export default function Emotes() {
         }
     }, [moduleContext.loadoutPresets, pageState.selectedSavedLoadout]);
 
+    const includeAny = pageState.includeProfileIcon || pageState.includeWard || pageState.includeEmotes || pageState.includeTFTMap || pageState.includeTFTBoom || pageState.includeLittleLegend;
+
     return (
         <div>
             <Section>
@@ -52,7 +54,7 @@ export default function Emotes() {
                 <Toggle label="Include TFT Boom" state={pageState.includeTFTBoom} setState={state => setPageState({ ...pageState, includeTFTBoom: state })} />
             </Section>
             <Section>
-                <Button disabled={pageState.blockWriteActions} label="Create loadout preset" color="primary" onClick={async () => {
+                <Button disabled={pageState.blockWriteActions || !includeAny} label="Create loadout preset" color="primary" onClick={async () => {
                     if (pageState.blockWriteActions)
                         return;
 
@@ -129,7 +131,7 @@ export default function Emotes() {
                     await LoadoutPreset.loadPreset(savedLoadout);
                     setPageState(pageState => { return { ...pageState, blockLoading: false } })
                 }} />
-                <Button label="Replace" disabled={pageState.selectedSavedLoadout === "" || pageState.blockWriteActions} title="Replace the selected loadout preset" wide color="caution" onClick={async () => {
+                <Button label="Replace" disabled={pageState.selectedSavedLoadout === "" || pageState.blockWriteActions || !includeAny} title="Replace the selected loadout preset" wide color="caution" onClick={async () => {
                     if(pageState.selectedSavedLoadout === "")
                         return;
 
